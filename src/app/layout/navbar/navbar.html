@@ -1,0 +1,49 @@
+<div class="navbar">
+  <div class="nav-left">
+    <div class="nav-tabs">
+      <button class="tab active">Dashboard</button>
+      <button class="tab">Transactions</button>
+      <button class="tab">Reports</button>
+      <button class="tab">Settings</button>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <button class="icon-btn">
+      <span class="material-symbols-outlined nav-icon">notifications</span>
+    </button>
+
+    <div class="language-wrapper">
+      <button class="icon-btn" (click)="toggleLanguageMenu()">
+        <span class="material-symbols-outlined nav-icon">language</span>
+      </button>
+
+      @if (isLanguageMenuOpen) {
+        <div class="language-menu">
+          <button class="language-item" (click)="changeLanguage('en')">
+            <span class="lang-code">EN</span>
+            <span class="lang-label">English</span>
+          </button>
+
+          <button class="language-item" (click)="changeLanguage('ar')">
+            <span class="lang-code">AR</span>
+            <span class="lang-label">العربية</span>
+          </button>
+
+          <button class="language-item" (click)="changeLanguage('fr')">
+            <span class="lang-code">FR</span>
+            <span class="lang-label">Français</span>
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="profile-card">
+      <div class="avatar">M</div>
+      <div class="profile-info">
+        <span class="name">Marcus Vane</span>
+        <span class="role">Chief People Officer</span>
+      </div>
+    </div>
+  </div>
+</div>
