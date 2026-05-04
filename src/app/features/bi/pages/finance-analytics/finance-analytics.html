@@ -7,9 +7,26 @@
 
     <div class="page-header-right" data-html2canvas-ignore="true">
       <div class="period-group">
-        <button>Last 30 Days</button>
-        <button class="active">Last 6 Months</button>
-        <button>Year to Date</button>
+        <button
+          type="button"
+          [class.active]="selectedPeriod === 'last30days'"
+          (click)="setPeriod('last30days')">
+          Last 30 Days
+        </button>
+
+        <button
+          type="button"
+          [class.active]="selectedPeriod === 'last6months'"
+          (click)="setPeriod('last6months')">
+          Last 6 Months
+        </button>
+
+        <button
+          type="button"
+          [class.active]="selectedPeriod === 'yearToDate'"
+          (click)="setPeriod('yearToDate')">
+          Year to Date
+        </button>
       </div>
 
       <div class="header-divider"></div>

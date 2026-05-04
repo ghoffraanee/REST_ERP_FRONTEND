@@ -5,10 +5,18 @@
 }
 
 .page-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 24px;
+
+  background: #f5f7fb;
+  padding: 18px 0;
+  border-bottom: 1px solid #e8edf5;
 }
 
 .page-title h1 {

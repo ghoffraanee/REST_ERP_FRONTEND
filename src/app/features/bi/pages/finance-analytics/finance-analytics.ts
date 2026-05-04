@@ -1,28 +1,57 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Chart, registerables, ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
-
-import { PageFilters } from '../../../../layout/page-filters/page-filters';
 import { SectionTitleComponent } from '../../components/section-title/section-title';
-import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
+import { FinanceKpiService } from '../../services/finance-kpi.service';
+import {
+  FinanceKpiResponse,
+  FinanceRevenueProfitTrendItem,
+  FinanceCashFlowTrendItem,
+} from '../../models/finance-kpi-response';
 
 Chart.register(...registerables);
 
+type TrendType = 'positive' | 'negative' | 'neutral';
+
+interface FinanceKpiCard {
+  title: string;
+  value: string;
+  trend: string;
+  icon: string;
+  trendType: TrendType;
+  highlight?: boolean;
+  warning?: boolean;
+  description?: string;
+}
+
 @Component({
   selector: 'app-finance-analytics',
-  imports: [PageFilters, SectionTitleComponent, KpiCardComponent, BaseChartDirective],
+  standalone: true,
+  imports: [SectionTitleComponent, BaseChartDirective],
   templateUrl: './finance-analytics.html',
   styleUrl: './finance-analytics.css',
 })
-export class FinanceAnalyticsComponent {
+export class FinanceAnalyticsComponent implements OnInit {
   @ViewChild('dashboardContent', { static: false }) dashboardContent!: ElementRef;
 
   isExportMenuOpen = false;
+  loadingKpis = false;
+  kpiErrorMessage = '';
+  selectedPeriod: 'last30days' | 'last6months' | 'yearToDate' = 'last6months';
 
-  overviewKpis = [
+  startDate = '';
+  endDate = '';
+
+  constructor(private financeKpiService: FinanceKpiService) {}
+
+  ngOnInit(): void {
+    this.setPeriod('last6months');
+  }
+
+  overviewKpis: FinanceKpiCard[] = [
     {
       title: 'Total Revenue',
       value: '$4,285,100',
@@ -61,7 +90,7 @@ export class FinanceAnalyticsComponent {
     },
   ];
 
-  cashKpis = [
+  cashKpis: FinanceKpiCard[] = [
     {
       title: 'Cash Balance',
       value: '$842,000',
@@ -88,7 +117,7 @@ export class FinanceAnalyticsComponent {
     },
   ];
 
-  receivableKpis = [
+  receivableKpis: FinanceKpiCard[] = [
     {
       title: 'Total Accounts Receivable',
       value: '$650,400',
@@ -111,7 +140,7 @@ export class FinanceAnalyticsComponent {
       trendType: 'neutral' as const,
     },
     {
-      title: 'Due Invoices (Next 7 Days)',
+      title: 'Due Invoices',
       value: '28',
       trend: '',
       icon: '◷',
@@ -120,7 +149,7 @@ export class FinanceAnalyticsComponent {
     },
   ];
 
-  taxKpis = [
+  taxKpis: FinanceKpiCard[] = [
     {
       title: 'VAT Collected',
       value: '$185,200',
@@ -136,7 +165,7 @@ export class FinanceAnalyticsComponent {
       trendType: 'neutral' as const,
     },
     {
-      title: 'Estimated Tax',
+      title: 'Depreciation Expense',
       value: '$210,000',
       trend: '',
       icon: '◈',
@@ -305,6 +334,204 @@ export class FinanceAnalyticsComponent {
       },
     ],
   };
+  setPeriod(period: 'last30days' | 'last6months' | 'yearToDate'): void {
+    this.selectedPeriod = period;
+
+    const today = new Date();
+    const start = new Date(today);
+
+    if (period === 'last30days') {
+      start.setDate(today.getDate() - 30);
+    }
+
+    if (period === 'last6months') {
+      start.setMonth(today.getMonth() - 6);
+    }
+
+    if (period === 'yearToDate') {
+      start.setMonth(0);
+      start.setDate(1);
+    }
+
+    this.startDate = this.formatDate(start);
+    this.endDate = this.formatDate(today);
+
+    this.loadFinanceKpis();
+    this.loadRevenueProfitTrend();
+    this.loadCashFlowTrend();
+  }
+  private loadFinanceKpis(): void {
+    this.loadingKpis = true;
+    this.kpiErrorMessage = '';
+
+    this.financeKpiService.getFinanceKpis(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        console.log('Finance KPIs reçus:', data);
+        console.log('Période utilisée:', this.startDate, this.endDate);
+
+        this.applyFinanceKpis(data);
+        this.loadingKpis = false;
+      },
+      error: (error) => {
+        console.error('Erreur chargement KPIs Finance:', error);
+        this.kpiErrorMessage = 'Impossible de charger les KPIs Finance.';
+        this.loadingKpis = false;
+      },
+    });
+  }
+
+  private applyFinanceKpis(data: FinanceKpiResponse): void {
+    this.overviewKpis = [
+      {
+        title: 'Total Revenue',
+        value: this.formatCurrency(data.totalRevenue),
+        trend: '',
+        icon: '↗',
+        trendType: 'positive' as const,
+        highlight: true,
+        description: 'Gross income generated before any deductions or expenses.',
+      },
+      {
+        title: 'Net Profit',
+        value: this.formatCurrency(data.netProfit),
+        trend: '',
+        icon: '◔',
+        trendType: data.netProfit >= 0 ? 'positive' : 'negative',
+        highlight: true,
+        description: 'Remaining earnings after all operational costs and taxes.',
+      },
+      {
+        title: 'Total Expenses',
+        value: this.formatCurrency(data.totalExpenses),
+        trend: '',
+        icon: '▣',
+        trendType: 'negative' as const,
+        highlight: false,
+        description: 'Sum of all operational, administrative, and financial costs.',
+      },
+      {
+        title: 'Gross Margin %',
+        value: this.formatPercent(data.grossMarginPercentage),
+        trend: '',
+        icon: '%',
+        trendType: data.grossMarginPercentage >= 0 ? ('positive' as const) : ('negative' as const),
+        highlight: false,
+        description: 'Efficiency metric showing profit as a percentage of revenue.',
+      },
+    ];
+
+    this.cashKpis = [
+      {
+        title: 'Cash Balance',
+        value: this.formatCurrency(data.cashBalance),
+        trend: '',
+        icon: '▣',
+        trendType: 'neutral' as const,
+        description: 'Total liquid cash currently held across all internal accounts.',
+      },
+      {
+        title: 'Bank Account Balance',
+        value: this.formatCurrency(data.bankAccountBalance),
+        trend: '',
+        icon: '▥',
+        trendType: 'neutral' as const,
+        description: 'Consolidated balance from primary and secondary banking partners.',
+      },
+      {
+        title: 'Liquidity Ratio',
+        value: this.formatNumber(data.liquidityRatio),
+        trend: '',
+        icon: '⬡',
+        trendType: data.liquidityRatio >= 1 ? ('positive' as const) : ('negative' as const),
+        description: 'Ability to meet short-term obligations (Current Assets / Liabilities).',
+      },
+    ];
+
+    this.receivableKpis = [
+      {
+        title: 'Total Accounts Receivable',
+        value: this.formatCurrency(data.accountsReceivable),
+        trend: '',
+        icon: '↗',
+        trendType: 'neutral' as const,
+      },
+      {
+        title: 'Total Accounts Payable',
+        value: this.formatCurrency(data.accountsPayable),
+        trend: '',
+        icon: '↘',
+        trendType: 'neutral' as const,
+      },
+      {
+        title: 'Number of Open Invoices',
+        value: this.formatNumber(data.numberOfOpenInvoices),
+        trend: '',
+        icon: '▤',
+        trendType: 'neutral' as const,
+      },
+      {
+        title: 'Due Invoices',
+        value: this.formatNumber(data.dueInvoices),
+        trend: '',
+        icon: '◷',
+        trendType: data.dueInvoices > 0 ? ('negative' as const) : ('neutral' as const),
+        warning: data.dueInvoices > 0,
+      },
+    ];
+
+    this.taxKpis = [
+      {
+        title: 'VAT Collected',
+        value: this.formatCurrency(data.vatCollected),
+        trend: '',
+        icon: '▣',
+        trendType: 'neutral' as const,
+      },
+      {
+        title: 'VAT Payable',
+        value: this.formatCurrency(data.vatPayable),
+        trend: '',
+        icon: '▣',
+        trendType: data.vatPayable > 0 ? 'negative' : 'positive',
+      },
+      {
+        title: 'Depreciation Expense',
+        value: this.formatCurrency(data.depreciationExpense),
+        trend: '',
+        icon: '◈',
+        trendType: 'neutral' as const,
+        highlight: true,
+      },
+    ];
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatCurrency(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(safeValue);
+  }
+
+  private formatPercent(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+    return `${safeValue.toFixed(1)}%`;
+  }
+
+  private formatNumber(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+    return new Intl.NumberFormat('en-US').format(safeValue);
+  }
 
   toggleExportMenu(): void {
     this.isExportMenuOpen = !this.isExportMenuOpen;
@@ -437,4 +664,67 @@ export class FinanceAnalyticsComponent {
         return '';
     }
   }
+  private loadRevenueProfitTrend(): void {
+    this.financeKpiService.getRevenueProfitTrend(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyRevenueProfitTrend(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Revenue vs Profit Trend:', error);
+      },
+    });
+  }
+
+  private applyRevenueProfitTrend(data: FinanceRevenueProfitTrendItem[]): void {
+    this.revenueTrendChartData = {
+      labels: data.map((item) => item.period),
+      datasets: [
+        {
+          data: data.map((item) => item.revenue),
+          label: 'Revenue',
+          tension: 0.35,
+          fill: true,
+          borderColor: '#5b61f6',
+          backgroundColor: 'rgba(91, 97, 246, 0.15)',
+        },
+        {
+          data: data.map((item) => item.profit),
+          label: 'Profit',
+          tension: 0.35,
+          fill: false,
+          borderColor: '#7c8cff',
+          borderDash: [5, 5],
+        },
+      ],
+    };
+  }
+  private loadCashFlowTrend(): void {
+    this.financeKpiService.getCashFlowTrend(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyCashFlowTrend(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Cash Flow Trend:', error);
+      },
+    });
+  }
+
+  private applyCashFlowTrend(data: FinanceCashFlowTrendItem[]): void {
+    this.cashFlowChartData = {
+      labels: data.map((item) => item.period),
+      datasets: [
+        {
+          data: data.map((item) => item.inflow),
+          label: 'Inflow',
+          backgroundColor: '#5b61f6',
+        },
+        {
+          data: data.map((item) => item.outflow),
+          label: 'Outflow',
+          backgroundColor: '#c9c5f7',
+        },
+      ],
+    };
+  }
 }
+
