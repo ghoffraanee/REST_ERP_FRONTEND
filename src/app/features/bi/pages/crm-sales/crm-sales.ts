@@ -260,6 +260,20 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
     }));
   }
 
+  getOrderStatusClass(status: string): string {
+  const normalizedStatus = (status || '').toLowerCase();
+
+  if (normalizedStatus === 'close' ) {
+    return 'status-close';
+  }
+
+  if (normalizedStatus === 'open') {
+    return 'status-open';
+  }
+
+  return 'status-default';
+}
+
   private applyRevenueByProduct(data: { name: string; amount: number }[]): void {
     this.revenueByProductChartData = {
       labels: data.map(i => i.name),
@@ -394,7 +408,12 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
   private buildExportRows(): object[] {
     return [
       ...this.kpis.map(i => ({ section: 'KPIs', title: i.title, value: i.value, trend: i.trend })),
-      ...this.topSales.map(i => ({ section: 'Top Sales Representatives', name: i.name, amount: i.amount })),
+      ...this.topSales.map((item, index) => ({
+        section: 'Top Sales Representatives',
+        rank: index + 1,
+        name: item.name,
+        amount: item.amount
+      })),
       ...this.highValueDeals.map(i => ({ section: 'High Value Deals', name: i.name, value: i.value })),
       ...this.salesOrders.map(i => ({ section: 'Orders and Invoices', ...i })),
       ...this.regionalConversions.map(i => ({ section: 'Regional Conversion Rates', region: i.region, value: i.value, trend: i.trend })),

@@ -3,6 +3,30 @@
   flex-direction: column;
   gap: 28px;
 }
+
+.rank-number {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #5b61f6;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.birthday-rank {
+  margin-left: 0;
+}
+
+table td:first-child,
+table th:first-child {
+  width: 60px;
+  text-align: center;
+}
 .page-header-right {
   display: flex;
   align-items: center;
@@ -129,6 +153,10 @@
   gap: 24px;
 }
 
+.payroll-block ::ng-deep .accent-line {
+  background: #6366f1 !important;
+}
+
 .page-title h1 {
   margin: 0;
   font-size: 32px;
@@ -155,6 +183,70 @@
 
 .kpi-grid-5 {
   grid-template-columns: repeat(5, 1fr);
+}
+
+.payroll-recruitment-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+.analytics-block {
+  border: 1px solid #e9edf5;
+  border-radius: 26px;
+  padding: 26px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.payroll-block {
+  background: linear-gradient(180deg, #9e97f5 0%, #ffffff 100%);
+}
+
+.recruitment-block {
+  background: linear-gradient(180deg, #fab663 0%, #ffffff 100%);
+}
+
+.sub-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.sub-kpi-grid app-kpi-card {
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .payroll-recruitment-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .sub-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.attendance-kpi-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .attendance-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .attendance-kpi-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kpi-grid-2 {

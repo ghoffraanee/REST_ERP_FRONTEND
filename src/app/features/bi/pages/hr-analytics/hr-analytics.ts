@@ -731,12 +731,13 @@ formatNumber(value: number | null | undefined): string {
         value: item.value,
         trend: item.trend,
       })),
-      ...this.upcomingBirthdays.map((item) => ({
-        section: 'Upcoming Birthdays',
-        employee: item.employee,
-        department: item.department,
-        remaining_days: item.remainingDays,
-      })),
+      ...this.upcomingBirthdays.map((item, index) => ({
+      section: 'Upcoming Birthdays',
+      rank: index + 1,
+      employee: item.employee,
+      department: item.department,
+      remaining_days: item.remainingDays,
+    })),
     ];
   }
   formatCurrency(value: number | null | undefined): string {

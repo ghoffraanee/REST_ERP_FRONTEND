@@ -13,6 +13,14 @@
   margin-top: 4px;
 }
 
+.accent-line-2{
+  width: 4px;
+  height: 22px;
+  border-radius: 8px;
+  background: #6366f1;
+  margin-top: 4px;
+}
+
 .section-title h2 {
   margin: 0;
   font-size: 28px;
@@ -53,5 +61,5 @@
   margin: 4px 0 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #7b8494;
+  color: #40454f;
 }

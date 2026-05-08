@@ -57,24 +57,13 @@
     <div class="overview-grid">
       <div class="overview-kpis">
         @for (item of overviewKpis; track item.title) {
-          <div class="finance-kpi-card" [class.highlight-card]="item.highlight">
-            <div class="finance-kpi-top">
-              <div class="finance-icon-box">{{ item.icon }}</div>
-
-              @if (item.trend) {
-                <div
-                  class="finance-trend"
-                  [class.positive]="item.trendType === 'positive'"
-                  [class.negative]="item.trendType === 'negative'">
-                  {{ item.trend }}
-                </div>
-              }
-            </div>
-
-            <div class="finance-kpi-title">{{ item.title }}</div>
-            <div class="finance-kpi-value">{{ item.value }}</div>
-            <div class="finance-kpi-desc">{{ item.description }}</div>
-          </div>
+          <app-kpi-card
+            [title]="item.title"
+            [value]="item.value"
+            [trend]="item.trend || ''"
+            [icon]="item.icon"
+            [trendType]="item.trendType || 'neutral'">
+          </app-kpi-card>
         }
       </div>
 
@@ -105,19 +94,13 @@
     <div class="cash-grid">
       <div class="cash-side-kpis">
         @for (item of cashKpis; track item.title) {
-          <div class="mini-kpi-card">
-            <div class="mini-kpi-top">
-              <div class="finance-icon-box">{{ item.icon }}</div>
-
-              @if (item.trend) {
-                <div class="finance-trend positive">{{ item.trend }}</div>
-              }
-            </div>
-
-            <div class="mini-kpi-title">{{ item.title }}</div>
-            <div class="mini-kpi-value">{{ item.value }}</div>
-            <div class="mini-kpi-desc">{{ item.description }}</div>
-          </div>
+          <app-kpi-card
+            [title]="item.title"
+            [value]="item.value"
+            [trend]="item.trend || ''"
+            [icon]="item.icon"
+            [trendType]="item.trendType || 'positive'">
+          </app-kpi-card>
         }
       </div>
 
@@ -149,14 +132,13 @@
 
     <div class="kpi-grid kpi-grid-4">
       @for (item of receivableKpis; track item.title) {
-        <div class="mini-kpi-card" [class.warning-card]="item.warning">
-          <div class="mini-kpi-top">
-            <div class="finance-icon-box">{{ item.icon }}</div>
-          </div>
-
-          <div class="mini-kpi-title">{{ item.title }}</div>
-          <div class="mini-kpi-value">{{ item.value }}</div>
-        </div>
+        <app-kpi-card
+          [title]="item.title"
+          [value]="item.value"
+          [trend]="item.trend || ''"
+          [icon]="item.icon"
+          [trendType]="item.warning ? 'negative' : 'neutral'">
+        </app-kpi-card>
       }
     </div>
 
@@ -234,14 +216,13 @@
 
       <div class="kpi-grid kpi-grid-3">
         @for (item of taxKpis; track item.title) {
-          <div class="mini-kpi-card" [class.highlight-card]="item.highlight">
-            <div class="mini-kpi-top">
-              <div class="finance-icon-box">{{ item.icon }}</div>
-            </div>
-
-            <div class="mini-kpi-title">{{ item.title }}</div>
-            <div class="mini-kpi-value">{{ item.value }}</div>
-          </div>
+          <app-kpi-card
+            [title]="item.title"
+            [value]="item.value"
+            [trend]="item.trend || ''"
+            [icon]="item.icon"
+            [trendType]="item.trendType || 'neutral'">
+          </app-kpi-card>
         }
       </div>
 

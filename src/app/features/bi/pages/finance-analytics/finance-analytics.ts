@@ -14,6 +14,7 @@ import {
   FinanceLiabilityAssetItem,
   FinanceAssetDistributionItem,
 } from '../../models/finance-kpi-response';
+import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
 
 Chart.register(...registerables);
 
@@ -33,7 +34,7 @@ interface FinanceKpiCard {
 @Component({
   selector: 'app-finance-analytics',
   standalone: true,
-  imports: [SectionTitleComponent, BaseChartDirective],
+  imports: [SectionTitleComponent, BaseChartDirective,KpiCardComponent],
   templateUrl: './finance-analytics.html',
   styleUrl: './finance-analytics.css',
 })
