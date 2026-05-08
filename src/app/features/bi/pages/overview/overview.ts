@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Chart, registerables, ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import html2canvas from 'html2canvas';
@@ -8,63 +8,98 @@ import * as XLSX from 'xlsx';
 import { PageFilters } from '../../../../layout/page-filters/page-filters';
 import { SectionTitleComponent } from '../../components/section-title/section-title';
 import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
-
+import { OverviewKpiService } from '../../services/overview-kpi.service';
+import {
+  OverviewKpiResponse,
+  OverviewFinancialTrendItem,
+  OverviewCashSummaryItem,
+} from '../../models/overview-kpi-response';
+import { RouterLink } from '@angular/router';
 Chart.register(...registerables);
+type TrendType = 'positive' | 'negative' | 'neutral';
+
+interface OverviewKpiCard {
+  title: string;
+  value: string;
+  trend: string;
+  icon: string;
+  trendType: TrendType;
+}
 
 @Component({
   selector: 'app-overview',
-  imports: [PageFilters, SectionTitleComponent, KpiCardComponent, BaseChartDirective],
+  imports: [SectionTitleComponent, KpiCardComponent, BaseChartDirective, RouterLink],
   templateUrl: './overview.html',
   styleUrl: './overview.css',
   standalone: true,
 })
-export class OverviewComponent {
+export class OverviewComponent implements OnInit {
   @ViewChild('dashboardContent', { static: false }) dashboardContent!: ElementRef;
 
   isExportMenuOpen = false;
+  loadingKpis = false;
+  kpiErrorMessage = '';
 
-  topKpis = [
+  selectedPeriod: 'last30days' | 'last6months' | 'yearToDate' = 'last6months';
+
+  startDate = '';
+  endDate = '';
+
+  cashBalanceDisplay = '$0';
+
+  avgMonthlyNetProfitDisplay = '$0';
+  cashBalanceBars = [
+    { label: 'Inflow', value: '$0', width: 0, color: 'green' },
+    { label: 'Outflow', value: '$0', width: 0, color: 'red' },
+  ];
+  constructor(private overviewKpiService: OverviewKpiService) {}
+
+  ngOnInit(): void {
+    this.setPeriod('last6months');
+  }
+
+  topKpis: OverviewKpiCard[] = [
     {
       title: 'Total Employees',
       value: '897',
       trend: '+12',
-      icon: '👥',
-      trendType: 'positive' as const,
+      icon: 'groups',
+      trendType: 'positive',
     },
     {
       title: 'Presence Rate',
       value: '94.2%',
       trend: '+0.5%',
-      icon: '🟢',
-      trendType: 'positive' as const,
+      icon: 'check_circle',
+      trendType: 'positive',
     },
     {
       title: 'Total Revenue',
       value: '$4.28M',
       trend: '+18.4%',
-      icon: '💲',
-      trendType: 'positive' as const,
+      icon: 'attach_money',
+      trendType: 'positive',
     },
     {
       title: 'Net Profit',
       value: '$1.12M',
       trend: '+22.1%',
-      icon: '🧾',
-      trendType: 'positive' as const,
+      icon: 'receipt_long',
+      trendType: 'positive',
     },
     {
       title: 'Win Rate',
       value: '68%',
       trend: '+4.4%',
-      icon: '🪙',
-      trendType: 'positive' as const,
+      icon: 'account_balance',
+      trendType: 'positive',
     },
     {
       title: 'Pipeline Value',
       value: '$12.4M',
       trend: '+44%',
-      icon: '🏢',
-      trendType: 'positive' as const,
+      icon: 'apartment',
+      trendType: 'positive',
     },
   ];
 
@@ -346,11 +381,88 @@ export class OverviewComponent {
     ],
   };
 
-  cashBalanceBars = [
-    { label: 'Inflow (30d)', value: '+$240,500', width: 78, color: 'green' },
-    { label: 'Outflow (30d)', value: '-$112,200', width: 46, color: 'red' },
-  ];
+  private loadFinancialTrend(): void {
+    this.overviewKpiService.getFinancialTrend(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyFinancialTrend(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Financial Trend:', error);
+      },
+    });
+  }
 
+  private applyFinancialTrend(data: OverviewFinancialTrendItem[]): void {
+    this.financialChartData = {
+      labels: data.map((item) => item.period),
+      datasets: [
+        {
+          data: data.map((item) => this.toMillions(item.revenue)),
+          label: 'Revenue',
+          backgroundColor: '#7c83ff',
+        },
+        {
+          data: data.map((item) => this.toMillions(item.expenses)),
+          label: 'Expenses',
+          backgroundColor: '#d9dcf2',
+        },
+      ],
+    };
+
+    this.financialLineData = {
+      labels: data.map((item) => item.period),
+      datasets: [
+        {
+          data: data.map((item) => this.toMillions(item.netProfit)),
+          label: 'Net Profit',
+          tension: 0.35,
+          fill: false,
+          borderColor: '#4f46e5',
+        },
+      ],
+    };
+
+    const totalNetProfit = data.reduce((sum, item) => sum + (item.netProfit ?? 0), 0);
+
+    const avgMonthlyNetProfit = data.length > 0 ? totalNetProfit / data.length : 0;
+
+    this.avgMonthlyNetProfitDisplay = this.formatCompactCurrency(avgMonthlyNetProfit);
+  }
+
+  private toMillions(value: number | null | undefined): number {
+    return Number(((value ?? 0) / 1_000_000).toFixed(2));
+  }
+  private loadCashSummary(): void {
+    this.overviewKpiService.getCashSummary(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyCashSummary(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Cash Summary:', error);
+      },
+    });
+  }
+
+  private applyCashSummary(data: OverviewCashSummaryItem): void {
+    this.cashBalanceDisplay = this.formatCompactCurrency(data.cashBalance);
+
+    const maxValue = Math.max(data.inflow, data.outflow, 1);
+
+    this.cashBalanceBars = [
+      {
+        label: 'Inflow',
+        value: `+${this.formatCompactCurrency(data.inflow)}`,
+        width: Math.round((data.inflow / maxValue) * 100),
+        color: 'green',
+      },
+      {
+        label: 'Outflow',
+        value: `-${this.formatCompactCurrency(data.outflow)}`,
+        width: Math.round((data.outflow / maxValue) * 100),
+        color: 'red',
+      },
+    ];
+  }
   toggleExportMenu(): void {
     this.isExportMenuOpen = !this.isExportMenuOpen;
   }
@@ -478,5 +590,128 @@ export class OverviewComponent {
   getDeptWidth(value: number): string {
     const max = 320;
     return `${(value / max) * 100}%`;
+  }
+
+  setPeriod(period: 'last30days' | 'last6months' | 'yearToDate'): void {
+    this.selectedPeriod = period;
+
+    const today = new Date();
+    const start = new Date(today);
+
+    if (period === 'last30days') {
+      start.setDate(today.getDate() - 30);
+    }
+
+    if (period === 'last6months') {
+      start.setMonth(today.getMonth() - 6);
+    }
+
+    if (period === 'yearToDate') {
+      start.setMonth(0);
+      start.setDate(1);
+    }
+
+    this.startDate = this.formatDate(start);
+    this.endDate = this.formatDate(today);
+
+    this.loadOverviewKpis();
+    this.loadFinancialTrend();
+    this.loadCashSummary();
+  }
+
+  private loadOverviewKpis(): void {
+    this.loadingKpis = true;
+    this.kpiErrorMessage = '';
+
+    this.overviewKpiService.getOverviewKpis(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        console.log('Overview KPIs reçus:', data);
+        console.log('Période utilisée:', this.startDate, this.endDate);
+
+        this.applyOverviewKpis(data);
+        this.loadingKpis = false;
+      },
+      error: (error) => {
+        console.error('Erreur chargement Overview KPIs:', error);
+        this.kpiErrorMessage = 'Impossible de charger les KPIs Overview.';
+        this.loadingKpis = false;
+      },
+    });
+  }
+
+  private applyOverviewKpis(data: OverviewKpiResponse): void {
+    this.topKpis = [
+      {
+        title: 'Total Employees',
+        value: this.formatNumber(data.totalEmployees),
+        trend: '',
+        icon: 'groups',
+        trendType: 'positive',
+      },
+      {
+        title: 'Presence Rate',
+        value: this.formatPercent(data.presenceRate),
+        trend: '',
+        icon: 'check_circle',
+        trendType: data.presenceRate >= 80 ? 'positive' : 'negative',
+      },
+      {
+        title: 'Total Revenue',
+        value: this.formatCompactCurrency(data.totalRevenue),
+        trend: '',
+        icon: 'attach_money',
+        trendType: 'positive',
+      },
+      {
+        title: 'Net Profit',
+        value: this.formatCompactCurrency(data.netProfit),
+        trend: '',
+        icon: 'receipt_long',
+        trendType: data.netProfit >= 0 ? 'positive' : 'negative',
+      },
+      {
+        title: 'Win Rate',
+        value: this.formatPercent(data.winRate),
+        trend: '',
+        icon: 'account_balance',
+        trendType: data.winRate >= 50 ? 'positive' : 'negative',
+      },
+      {
+        title: 'Pipeline Value',
+        value: this.formatCompactCurrency(data.pipelineValue),
+        trend: '',
+        icon: 'apartment',
+        trendType: 'positive',
+      },
+    ];
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatNumber(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+    return new Intl.NumberFormat('en-US').format(safeValue);
+  }
+
+  private formatPercent(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+    return `${safeValue.toFixed(2)}%`;
+  }
+
+  private formatCompactCurrency(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      notation: 'compact',
+      maximumFractionDigits: 2,
+    }).format(safeValue);
   }
 }

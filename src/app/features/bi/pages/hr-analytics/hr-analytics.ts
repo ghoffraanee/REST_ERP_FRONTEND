@@ -17,11 +17,12 @@ Chart.register(...registerables);
 
 @Component({
   selector: 'app-hr-analytics',
-  imports: [PageFilters, SectionTitleComponent, KpiCardComponent, BaseChartDirective],
+  imports: [SectionTitleComponent, KpiCardComponent, BaseChartDirective],
   templateUrl: './hr-analytics.html',
   styleUrl: './hr-analytics.css',
+  standalone: true,
 })
-export class HrAnalyticsComponent implements OnInit{
+export class HrAnalyticsComponent implements OnInit {
   @ViewChild('dashboardContent', { static: false }) dashboardContent!: ElementRef;
 
   private hrService = inject(HrService);
@@ -35,12 +36,12 @@ export class HrAnalyticsComponent implements OnInit{
   isExportMenuOpen = false;
 
   workforceKpis: Array<{
-  title: string;
-  value: string;
-  trend: string;
-  icon: string;
-  trendType: 'positive' | 'negative' | 'neutral';
-}> = [];
+    title: string;
+    value: string;
+    trend: string;
+    icon: string;
+    trendType: 'positive' | 'negative' | 'neutral';
+  }> = [];
 
   attendanceKpis: any[] = [];
 
@@ -48,15 +49,13 @@ export class HrAnalyticsComponent implements OnInit{
 
   recruitmentKpis: any[] = [];
 
-
- 
   footerKpis: any[] = [];
 
   upcomingBirthdays: {
-  employee: string;
-  department: string;
-  remainingDays: number;
-}[] = [];
+    employee: string;
+    department: string;
+    remainingDays: number;
+  }[] = [];
 
   commonChartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -78,50 +77,44 @@ export class HrAnalyticsComponent implements OnInit{
     },
   };
 
- headcountChartType: 'line' = 'line';
+  headcountChartType: 'line' = 'line';
 
-headcountChartData: ChartData<'line'> = {
-  labels: [],
-  datasets: [
-    {
-      data: [],
-      label: 'Headcount',
-      fill: true,
-      tension: 0.4,
-      borderColor: '#5b61f6',
-      backgroundColor: 'rgba(91,97,246,0.2)',
-    },
-  ],
-};
+  headcountChartData: ChartData<'line'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Headcount',
+        fill: true,
+        tension: 0.4,
+        borderColor: '#5b61f6',
+        backgroundColor: 'rgba(91,97,246,0.2)',
+      },
+    ],
+  };
 
   tenureChartType: 'doughnut' = 'doughnut';
 
-tenureChartData: ChartData<'doughnut'> = {
-  labels: [],
-  datasets: [
-    {
-      data: [],
-      backgroundColor: [
-        '#5b61f6',
-        '#818cf8',
-        '#38bdf8',
-        '#22c55e',
-      ],
-    },
-  ],
-};
+  tenureChartData: ChartData<'doughnut'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#22c55e'],
+      },
+    ],
+  };
 
-tenureChartOptions: ChartConfiguration<'doughnut'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  cutout: '65%',
-  plugins: {
-    legend: {
-      position: 'bottom',
+  tenureChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
     },
-  },
-};
-
+  };
 
   attendanceChartType: 'line' = 'line';
   attendanceChartData: ChartData<'line'> = {
@@ -147,485 +140,545 @@ tenureChartOptions: ChartConfiguration<'doughnut'>['options'] = {
 
   attendanceTrendChartType: 'line' = 'line';
 
-attendanceTrendChartData: ChartData<'line'> = {
-  labels: [],
-  datasets: [
-    {
-      data: [],
-      label: 'Presence Rate',
-      fill: false,
-      tension: 0.4,
-      borderColor: '#5b61f6',
-    },
-    {
-      data: [],
-      label: 'Absence Rate',
-      fill: false,
-      tension: 0.4,
-      borderColor: '#ef4444',
-    },
-  ],
-};
+  attendanceTrendChartData: ChartData<'line'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Presence Rate',
+        fill: false,
+        tension: 0.4,
+        borderColor: '#5b61f6',
+      },
+      {
+        data: [],
+        label: 'Absence Rate',
+        fill: false,
+        tension: 0.4,
+        borderColor: '#ef4444',
+      },
+    ],
+  };
 
- salaryBenchmarkChartType: 'bar' = 'bar';
+  salaryBenchmarkChartType: 'bar' = 'bar';
 
-salaryBenchmarkChartData: ChartData<'bar'> = {
-  labels: [],
-  datasets: [
-    {
-      data: [],
-      label: 'Average Salary',
-      backgroundColor: '#5b61f6',
-    },
-    {
-      data: [],
-      label: 'Maximum Salary',
-      backgroundColor: '#a78bfa',
-    },
-  ],
-};
+  salaryBenchmarkChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Average Salary',
+        backgroundColor: '#5b61f6',
+      },
+      {
+        data: [],
+        label: 'Maximum Salary',
+        backgroundColor: '#a78bfa',
+      },
+    ],
+  };
 
-salaryBenchmarkChartOptions: ChartConfiguration<'bar'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
+  salaryBenchmarkChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
     },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
     },
-  },
-};
+  };
 
-hiringFunnelChartType: 'bar' = 'bar';
+  hiringFunnelChartType: 'bar' = 'bar';
 
-hiringFunnelChartData: ChartData<'bar'> = {
-  labels: [],
-  datasets: [
-    {
-      data: [],
-      label: 'Hiring Funnel',
-      backgroundColor: '#f59e0b',
-    },
-  ],
-};
+  hiringFunnelChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Hiring Funnel',
+        backgroundColor: '#f59e0b',
+      },
+    ],
+  };
 
-hiringFunnelChartOptions: ChartConfiguration<'bar'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
+  hiringFunnelChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
     },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
     },
-  },
-};
+  };
 
- employeesByDepartmentChartType: 'bar' = 'bar';
+  employeesByDepartmentChartType: 'bar' = 'bar';
 
-employeesByDepartmentChartData: ChartData<'bar'> = {
-  labels: [],
-  datasets: [
-    {
-      data: [],
-      label: 'Employees',
-      backgroundColor: '#5b61f6',
-    },
-  ],
-};
+  employeesByDepartmentChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Employees',
+        backgroundColor: '#5b61f6',
+      },
+    ],
+  };
 
-employeesByDepartmentChartOptions: ChartConfiguration<'bar'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  indexAxis: 'y',
-  plugins: {
-    legend: {
-      display: false,
+  employeesByDepartmentChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: false,
+      },
     },
-  },
-  scales: {
-    x: {
-      beginAtZero: true,
+    scales: {
+      x: {
+        beginAtZero: true,
+      },
     },
-  },
-};
+  };
 
   ngOnInit(): void {
-  this.setPeriod('6months');
-}
-
-setPeriod(period: '30days' | '6months' | 'ytd'): void {
-  this.selectedPeriod = period;
-  this.updateDateRange(period);
-
-  console.log('RH period:', period, this.startDate, this.endDate);
-
-  this.loadHrKpis();
-  this.loadHeadcountTrend();
-  this.loadAttendanceTrend();
-  this.loadTenureDistribution();
-  this.loadEmployeesByDepartment();
-  this.loadSalaryBenchmarking();
-  this.loadHiringFunnel();
-  this.loadUpcomingBirthdays();
-}
-
-private updateDateRange(period: '30days' | '6months' | 'ytd'): void {
-  const today = new Date();
-  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  let start: Date;
-
-  if (period === '30days') {
-    start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    start.setDate(start.getDate() - 30);
-  } else if (period === '6months') {
-    start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    start.setMonth(start.getMonth() - 6);
-  } else {
-    start = new Date(today.getFullYear(), 0, 1);
+    this.setPeriod('6months');
   }
 
-  this.startDate = this.formatDateForApi(start);
-  this.endDate = this.formatDateForApi(end);
-}
+  setPeriod(period: '30days' | '6months' | 'ytd'): void {
+    this.selectedPeriod = period;
+    this.updateDateRange(period);
 
-private formatDateForApi(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+    console.log('RH period:', period, this.startDate, this.endDate);
 
-  return `${year}-${month}-${day}`;
-}
+    this.loadHrKpis();
+    this.loadHeadcountTrend();
+    this.loadAttendanceTrend();
+    this.loadTenureDistribution();
+    this.loadEmployeesByDepartment();
+    this.loadSalaryBenchmarking();
+    this.loadHiringFunnel();
+    this.loadUpcomingBirthdays();
+  }
 
-loadHrKpis(): void {
-  console.log('CALL API HR 🔥', this.startDate, this.endDate);
+  private updateDateRange(period: '30days' | '6months' | 'ytd'): void {
+    const today = new Date();
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  this.hrService.getHrKpis(this.startDate, this.endDate).subscribe({
-    next: (data: HrKpiResponse) => {
-      console.log('DATA HR =', data);
-      this.currency = data.currency || '';
+    let start: Date;
 
-      this.workforceKpis = [
-        { title: 'Total Employees', value: String(data.totalEmployees), trend: '', icon: 'groups', trendType: 'positive' },
-        { title: 'Active Employees', value: String(data.activeEmployees), trend: '', icon: 'badge', trendType: 'positive' },
-        { title: 'Inactive Employees', value: String(data.inactiveEmployees), trend: '', icon: 'person_off', trendType: 'negative' },
-        { title: 'Employees Onboarding', value: String(data.onboardingEmployees), trend: '', icon: 'person_add', trendType: 'positive' },
-        { title: 'Employees Offboarding', value: String(data.offboardingEmployees), trend: '', icon: 'person_remove', trendType: 'negative' },
-        { title: 'Average Tenure', value: `${this.formatNumber(data.averageTenure)} yrs`, trend: '', icon: 'schedule', trendType: 'positive' },
-        { title: 'Attrition Rate', value: `${this.formatNumber(data.attritionRate)}%`, trend: '', icon: 'trending_down', trendType: 'negative' },
-      ];
-      this.attendanceKpis = [
-        { title: 'Presence Rate', value: `${this.formatNumber(data.presenceRate)}%`, trend: '', icon: 'check_circle', trendType: 'positive' },
-        { title: 'Absence Rate', value: `${this.formatNumber(data.absenceRate)}%`, trend: '', icon: 'cancel', trendType: 'negative' },
-        { title: 'Late Check-ins', value: String(data.lateCheckins), trend: '', icon: 'schedule', trendType: 'negative' },
-        { title: 'Overtime Hours', value: `${this.formatNumber(data.overtimeHours)} h`, trend: '', icon: 'timer', trendType: 'positive' },
-      ];
-      this.payrollKpis = [
-        {
-          title: 'Total Payroll',
-          value: this.formatCurrency(data.totalPayroll),
-          trend: '',
-          icon: 'payments',
-          trendType: 'positive',
-        },
-        {
-          title: 'Average Salary',
-          value: this.formatCurrency(data.averageSalary),
-          trend: '',
-          icon: 'account_balance_wallet',
-          trendType: 'positive',
-        },
-        {
-          title: 'Avg Cost / Employee',
-          value: this.formatCurrency(data.averageCostPerEmployee),
-          trend: '',
-          icon: 'paid',
-          trendType: 'neutral',
-        },
-      ];
-      this.attendanceKpis = [
-        {
-          title: 'Presence Rate',
-          value: `${this.formatNumber(data.presenceRate)}%`,
-          trend: '',
-          icon: 'event_available',
-          trendType: 'positive',
-        },
-        {
-          title: 'Attendance Rate',
-          value: `${this.formatNumber(100 - (data.absenceRate ?? 0))}%`,
-          trend: '',
-          icon: 'check_circle',
-          trendType: 'positive',
-        },
-        {
-          title: 'Absence Rate',
-          value: `${this.formatNumber(data.absenceRate)}%`,
-          trend: '',
-          icon: 'event_busy',
-          trendType: 'negative',
-        },
-        {
-          title: 'Late Check-ins',
-          value: String(data.lateCheckins ?? 0),
-          trend: '',
-          icon: 'schedule',
-          trendType: 'negative',
-        },
-        {
-          title: 'Overtime Hours',
-          value: `${this.formatNumber(data.overtimeHours)} h`,
-          trend: '',
-          icon: 'bolt',
-          trendType: 'positive',
-        },
-        {
-          title: 'Absenteeism Volatility',
-          value: this.formatNumber(data.absenteeismVolatilityIndex),
-          trend: '',
-          icon: 'monitoring',
-          trendType: 'neutral',
-        },
-      ];
-      this.recruitmentKpis = [
-  {
-    title: 'Active Job Offers',
-    value: String(data.activeJobOffers ?? 0),
-    trend: '',
-    icon: 'work',
-    trendType: 'positive',
-  },
-  {
-    title: 'Total Applications',
-    value: String(data.totalApplications ?? 0),
-    trend: '',
-    icon: 'description',
-    trendType: 'positive',
-  },
-  {
-    title: 'Conversion Rate',
-    value: `${this.formatNumber(data.conversionRate)}%`,
-    trend: '',
-    icon: 'trending_up',
-    trendType: 'positive',
-  },
-];
-    this.footerKpis = [
-  {
-    title: 'Hired Applications',
-    value: String(data.hiredApplications ?? 0),
-    trend: '',
-    icon: 'how_to_reg',
-    trendType: 'positive',
-  },
-  {
-    title: 'Late Arrival Penalty',
-    value: this.formatCurrency(data.lateArrivalPenalty),
-    trend: '',
-    icon: 'paid',
-    trendType: 'negative',
-  },
-  {
-    title: 'Application Quality',
-    value: data.applicationQuality || 'No Data',
-    trend: '',
-    icon: 'analytics',
-    trendType: 'neutral',
-  },
-  {
-    title: 'Efficiency Index',
-    value: `${this.formatNumber(data.efficiencyIndex)} / 10`,
-    trend: '',
-    icon: 'bolt',
-    trendType: 'positive',
-  },
-];
-    },
-    error: (err: unknown) => {
-      console.error('Erreur KPI RH', err);
-    },
-  });
-}
+    if (period === '30days') {
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      start.setDate(start.getDate() - 30);
+    } else if (period === '6months') {
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      start.setMonth(start.getMonth() - 6);
+    } else {
+      start = new Date(today.getFullYear(), 0, 1);
+    }
 
-loadHeadcountTrend(): void {
-  this.hrService.getHeadcountTrend(this.startDate, this.endDate).subscribe({
-    next: (data: any[]) => {
-      this.headcountChartData = {
-        labels: data.map((item) => item.label),
-        datasets: [
+    this.startDate = this.formatDateForApi(start);
+    this.endDate = this.formatDateForApi(end);
+  }
+
+  private formatDateForApi(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  loadHrKpis(): void {
+    console.log('CALL API HR 🔥', this.startDate, this.endDate);
+
+    this.hrService.getHrKpis(this.startDate, this.endDate).subscribe({
+      next: (data: HrKpiResponse) => {
+        console.log('DATA HR =', data);
+        this.currency = data.currency || '';
+
+        this.workforceKpis = [
           {
-            data: data.map((item) => item.value),
-            label: 'Headcount',
-            fill: true,
-            tension: 0.4,
-            borderColor: '#5b61f6',
-            backgroundColor: 'rgba(91,97,246,0.2)',
-          },
-        ],
-      };
-    },
-    error: (err) => console.error(err),
-  });
-}
-
-loadAttendanceTrend(): void {
-  this.hrService.getAttendanceTrend(this.startDate, this.endDate).subscribe({
-    next: (data: any[]) => {
-      this.attendanceTrendChartData = {
-        labels: data.map(item => item.label),
-        datasets: [
-          {
-            data: data.map(item => item.presenceRate),
-            label: 'Presence Rate',
-            fill: false,
-            tension: 0.4,
-            borderColor: '#5b61f6',
+            title: 'Total Employees',
+            value: String(data.totalEmployees),
+            trend: '',
+            icon: 'groups',
+            trendType: 'positive',
           },
           {
-            data: data.map(item => item.absenceRate),
-            label: 'Absence Rate',
-            fill: false,
-            tension: 0.4,
-            borderColor: '#ef4444',
-          },
-        ],
-      };
-    },
-    error: (err: unknown) => {
-      console.error('Erreur attendance trend', err);
-    },
-  });
-}
-
-loadTenureDistribution(): void {
-  this.hrService.getTenureDistribution().subscribe({
-    next: (data: any[]) => {
-      this.tenureChartData = {
-        labels: data.map(item => item.label),
-        datasets: [
-          {
-            data: data.map(item => item.value),
-            backgroundColor: [
-              '#5b61f6',
-              '#818cf8',
-              '#38bdf8',
-              '#22c55e',
-            ],
-          },
-        ],
-      };
-    },
-    error: (err: unknown) => {
-      console.error('Erreur tenure distribution', err);
-    },
-  });
-}
-
-loadEmployeesByDepartment(): void {
-  this.hrService.getEmployeesByDepartment().subscribe({
-    next: (data: any[]) => {
-      this.employeesByDepartmentChartData = {
-        labels: data.map(item => item.department),
-        datasets: [
-          {
-            data: data.map(item => item.count),
-            label: 'Employees',
-            backgroundColor: '#5b61f6',
-          },
-        ],
-      };
-    },
-    error: (err: unknown) => {
-      console.error('Erreur employees by department', err);
-    },
-  });
-}
-
-
-loadSalaryBenchmarking(): void {
-  console.log('CALL SALARY BENCHMARKING', this.startDate, this.endDate);
-
-  this.hrService.getSalaryBenchmarking(this.startDate, this.endDate).subscribe({
-    next: (data: any[]) => {
-      console.log('SALARY BENCHMARKING DATA =', data);
-
-      const labels = data.map((item: any) => item.department);
-      const averageSalaries = data.map((item: any) => Number(item.averageSalary ?? 0));
-      const maximumSalaries = data.map((item: any) => Number(item.maximumSalary ?? 0));
-
-      console.log('SALARY LABELS =', labels);
-      console.log('AVG SALARIES =', averageSalaries);
-      console.log('MAX SALARIES =', maximumSalaries);
-
-      this.salaryBenchmarkChartData = {
-        labels,
-        datasets: [
-          {
-            data: averageSalaries,
-            label: 'Average Salary',
-            backgroundColor: '#5b61f6',
+            title: 'Active Employees',
+            value: String(data.activeEmployees),
+            trend: '',
+            icon: 'badge',
+            trendType: 'positive',
           },
           {
-            data: maximumSalaries,
-            label: 'Maximum Salary',
-            backgroundColor: '#a78bfa',
+            title: 'Inactive Employees',
+            value: String(data.inactiveEmployees),
+            trend: '',
+            icon: 'person_off',
+            trendType: 'negative',
           },
-        ],
-      };
-    },
-    error: (err: unknown) => {
-      console.error('Erreur salary benchmarking', err);
-    },
-  });
-}
-
-loadHiringFunnel(): void {
-  this.hrService.getHiringFunnel(this.startDate, this.endDate).subscribe({
-    next: (data: any[]) => {
-      this.hiringFunnelChartData = {
-        labels: data.map((item: any) => item.stage),
-        datasets: [
           {
-            data: data.map((item: any) => Number(item.count ?? 0)),
-            label: 'Hiring Funnel',
-            backgroundColor: '#f59e0b',
+            title: 'Employees Onboarding',
+            value: String(data.onboardingEmployees),
+            trend: '',
+            icon: 'person_add',
+            trendType: 'positive',
           },
-        ],
-      };
-    },
-    error: (err: unknown) => {
-      console.error('Erreur hiring funnel', err);
-    },
-  });
-}
+          {
+            title: 'Employees Offboarding',
+            value: String(data.offboardingEmployees),
+            trend: '',
+            icon: 'person_remove',
+            trendType: 'negative',
+          },
+          {
+            title: 'Average Tenure',
+            value: `${this.formatNumber(data.averageTenure)} yrs`,
+            trend: '',
+            icon: 'schedule',
+            trendType: 'positive',
+          },
+          {
+            title: 'Attrition Rate',
+            value: `${this.formatNumber(data.attritionRate)}%`,
+            trend: '',
+            icon: 'trending_down',
+            trendType: 'negative',
+          },
+        ];
+        this.attendanceKpis = [
+          {
+            title: 'Presence Rate',
+            value: `${this.formatNumber(data.presenceRate)}%`,
+            trend: '',
+            icon: 'check_circle',
+            trendType: 'positive',
+          },
+          {
+            title: 'Absence Rate',
+            value: `${this.formatNumber(data.absenceRate)}%`,
+            trend: '',
+            icon: 'cancel',
+            trendType: 'negative',
+          },
+          {
+            title: 'Late Check-ins',
+            value: String(data.lateCheckins),
+            trend: '',
+            icon: 'schedule',
+            trendType: 'negative',
+          },
+          {
+            title: 'Overtime Hours',
+            value: `${this.formatNumber(data.overtimeHours)} h`,
+            trend: '',
+            icon: 'timer',
+            trendType: 'positive',
+          },
+        ];
+        this.payrollKpis = [
+          {
+            title: 'Total Payroll',
+            value: this.formatCurrency(data.totalPayroll),
+            trend: '',
+            icon: 'payments',
+            trendType: 'positive',
+          },
+          {
+            title: 'Average Salary',
+            value: this.formatCurrency(data.averageSalary),
+            trend: '',
+            icon: 'account_balance_wallet',
+            trendType: 'positive',
+          },
+          {
+            title: 'Avg Cost / Employee',
+            value: this.formatCurrency(data.averageCostPerEmployee),
+            trend: '',
+            icon: 'paid',
+            trendType: 'neutral',
+          },
+        ];
+        this.attendanceKpis = [
+          {
+            title: 'Presence Rate',
+            value: `${this.formatNumber(data.presenceRate)}%`,
+            trend: '',
+            icon: 'event_available',
+            trendType: 'positive',
+          },
+          {
+            title: 'Attendance Rate',
+            value: `${this.formatNumber(100 - (data.absenceRate ?? 0))}%`,
+            trend: '',
+            icon: 'check_circle',
+            trendType: 'positive',
+          },
+          {
+            title: 'Absence Rate',
+            value: `${this.formatNumber(data.absenceRate)}%`,
+            trend: '',
+            icon: 'event_busy',
+            trendType: 'negative',
+          },
+          {
+            title: 'Late Check-ins',
+            value: String(data.lateCheckins ?? 0),
+            trend: '',
+            icon: 'schedule',
+            trendType: 'negative',
+          },
+          {
+            title: 'Overtime Hours',
+            value: `${this.formatNumber(data.overtimeHours)} h`,
+            trend: '',
+            icon: 'bolt',
+            trendType: 'positive',
+          },
+          {
+            title: 'Absenteeism Volatility',
+            value: this.formatNumber(data.absenteeismVolatilityIndex),
+            trend: '',
+            icon: 'monitoring',
+            trendType: 'neutral',
+          },
+        ];
+        this.recruitmentKpis = [
+          {
+            title: 'Active Job Offers',
+            value: String(data.activeJobOffers ?? 0),
+            trend: '',
+            icon: 'work',
+            trendType: 'positive',
+          },
+          {
+            title: 'Total Applications',
+            value: String(data.totalApplications ?? 0),
+            trend: '',
+            icon: 'description',
+            trendType: 'positive',
+          },
+          {
+            title: 'Conversion Rate',
+            value: `${this.formatNumber(data.conversionRate)}%`,
+            trend: '',
+            icon: 'trending_up',
+            trendType: 'positive',
+          },
+        ];
+        this.footerKpis = [
+          {
+            title: 'Hired Applications',
+            value: String(data.hiredApplications ?? 0),
+            trend: '',
+            icon: 'how_to_reg',
+            trendType: 'positive',
+          },
+          {
+            title: 'Late Arrival Penalty',
+            value: this.formatCurrency(data.lateArrivalPenalty),
+            trend: '',
+            icon: 'paid',
+            trendType: 'negative',
+          },
+          {
+            title: 'Application Quality',
+            value: data.applicationQuality || 'No Data',
+            trend: '',
+            icon: 'analytics',
+            trendType: 'neutral',
+          },
+          {
+            title: 'Efficiency Index',
+            value: `${this.formatNumber(data.efficiencyIndex)} / 10`,
+            trend: '',
+            icon: 'bolt',
+            trendType: 'positive',
+          },
+        ];
+      },
+      error: (err: unknown) => {
+        console.error('Erreur KPI RH', err);
+      },
+    });
+  }
 
-loadUpcomingBirthdays(): void {
-  this.hrService.getUpcomingBirthdays().subscribe({
-    next: (data: any[]) => {
-      this.upcomingBirthdays = data.map((item: any) => ({
-        employee: item.employee,
-        department: item.department,
-        remainingDays: item.remainingDays,
-      }));
-    },
-    error: (err: unknown) => {
-      console.error('Erreur upcoming birthdays', err);
-    },
-  });
-}
+  loadHeadcountTrend(): void {
+    this.hrService.getHeadcountTrend(this.startDate, this.endDate).subscribe({
+      next: (data: any[]) => {
+        this.headcountChartData = {
+          labels: data.map((item) => item.label),
+          datasets: [
+            {
+              data: data.map((item) => item.value),
+              label: 'Headcount',
+              fill: true,
+              tension: 0.4,
+              borderColor: '#5b61f6',
+              backgroundColor: 'rgba(91,97,246,0.2)',
+            },
+          ],
+        };
+      },
+      error: (err) => console.error(err),
+    });
+  }
 
-formatNumber(value: number | null | undefined): string {
-  return this.biFormat.formatNumber(value);
-}
+  loadAttendanceTrend(): void {
+    this.hrService.getAttendanceTrend(this.startDate, this.endDate).subscribe({
+      next: (data: any[]) => {
+        this.attendanceTrendChartData = {
+          labels: data.map((item) => item.label),
+          datasets: [
+            {
+              data: data.map((item) => item.presenceRate),
+              label: 'Presence Rate',
+              fill: false,
+              tension: 0.4,
+              borderColor: '#5b61f6',
+            },
+            {
+              data: data.map((item) => item.absenceRate),
+              label: 'Absence Rate',
+              fill: false,
+              tension: 0.4,
+              borderColor: '#ef4444',
+            },
+          ],
+        };
+      },
+      error: (err: unknown) => {
+        console.error('Erreur attendance trend', err);
+      },
+    });
+  }
+
+  loadTenureDistribution(): void {
+    this.hrService.getTenureDistribution().subscribe({
+      next: (data: any[]) => {
+        this.tenureChartData = {
+          labels: data.map((item) => item.label),
+          datasets: [
+            {
+              data: data.map((item) => item.value),
+              backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#22c55e'],
+            },
+          ],
+        };
+      },
+      error: (err: unknown) => {
+        console.error('Erreur tenure distribution', err);
+      },
+    });
+  }
+
+  loadEmployeesByDepartment(): void {
+    this.hrService.getEmployeesByDepartment().subscribe({
+      next: (data: any[]) => {
+        this.employeesByDepartmentChartData = {
+          labels: data.map((item) => item.department),
+          datasets: [
+            {
+              data: data.map((item) => item.count),
+              label: 'Employees',
+              backgroundColor: '#5b61f6',
+            },
+          ],
+        };
+      },
+      error: (err: unknown) => {
+        console.error('Erreur employees by department', err);
+      },
+    });
+  }
+
+  loadSalaryBenchmarking(): void {
+    console.log('CALL SALARY BENCHMARKING', this.startDate, this.endDate);
+
+    this.hrService.getSalaryBenchmarking(this.startDate, this.endDate).subscribe({
+      next: (data: any[]) => {
+        console.log('SALARY BENCHMARKING DATA =', data);
+
+        const labels = data.map((item: any) => item.department);
+        const averageSalaries = data.map((item: any) => Number(item.averageSalary ?? 0));
+        const maximumSalaries = data.map((item: any) => Number(item.maximumSalary ?? 0));
+
+        console.log('SALARY LABELS =', labels);
+        console.log('AVG SALARIES =', averageSalaries);
+        console.log('MAX SALARIES =', maximumSalaries);
+
+        this.salaryBenchmarkChartData = {
+          labels,
+          datasets: [
+            {
+              data: averageSalaries,
+              label: 'Average Salary',
+              backgroundColor: '#5b61f6',
+            },
+            {
+              data: maximumSalaries,
+              label: 'Maximum Salary',
+              backgroundColor: '#a78bfa',
+            },
+          ],
+        };
+      },
+      error: (err: unknown) => {
+        console.error('Erreur salary benchmarking', err);
+      },
+    });
+  }
+
+  loadHiringFunnel(): void {
+    this.hrService.getHiringFunnel(this.startDate, this.endDate).subscribe({
+      next: (data: any[]) => {
+        this.hiringFunnelChartData = {
+          labels: data.map((item: any) => item.stage),
+          datasets: [
+            {
+              data: data.map((item: any) => Number(item.count ?? 0)),
+              label: 'Hiring Funnel',
+              backgroundColor: '#f59e0b',
+            },
+          ],
+        };
+      },
+      error: (err: unknown) => {
+        console.error('Erreur hiring funnel', err);
+      },
+    });
+  }
+
+  loadUpcomingBirthdays(): void {
+    this.hrService.getUpcomingBirthdays().subscribe({
+      next: (data: any[]) => {
+        this.upcomingBirthdays = data.map((item: any) => ({
+          employee: item.employee,
+          department: item.department,
+          remainingDays: item.remainingDays,
+        }));
+      },
+      error: (err: unknown) => {
+        console.error('Erreur upcoming birthdays', err);
+      },
+    });
+  }
+
+  formatNumber(value: number | null | undefined): string {
+    return this.biFormat.formatNumber(value);
+  }
 
   toggleExportMenu(): void {
     this.isExportMenuOpen = !this.isExportMenuOpen;

@@ -7,9 +7,26 @@
 
     <div class="toolbar-right" data-html2canvas-ignore="true">
       <div class="period-group">
-        <button>Last 30 Days</button>
-        <button class="active">Last 6 Months</button>
-        <button>Year to Date</button>
+        <button
+          type="button"
+          [class.active]="selectedPeriod === 'last30days'"
+          (click)="setPeriod('last30days')">
+          Last 30 Days
+        </button>
+
+        <button
+          type="button"
+          [class.active]="selectedPeriod === 'last6months'"
+          (click)="setPeriod('last6months')">
+          Last 6 Months
+        </button>
+
+        <button
+          type="button"
+          [class.active]="selectedPeriod === 'yearToDate'"
+          (click)="setPeriod('yearToDate')">
+          Year to Date
+        </button>
       </div>
 
       <div class="header-divider"></div>
@@ -80,7 +97,7 @@
         <div class="card mini-summary-card">
           <span class="summary-label">Cash Balance</span>
           <div class="summary-big">
-            $1,248,320 <span class="summary-positive">+5.2%</span>
+            {{ cashBalanceDisplay }}
           </div>
 
           @for (bar of cashBalanceBars; track bar.label) {
@@ -121,9 +138,11 @@
           <div class="mini-footer-row">
             <div>
               <small>Avg. Monthly</small>
-              <strong>$212,000</strong>
+              <strong>{{ avgMonthlyNetProfitDisplay }}</strong>
             </div>
-            <a href="#">View Statements</a>
+            <a routerLink="/finance-analytics" fragment="financial-overview">
+              View Statements
+            </a>
           </div>
         </div>
       </div>
