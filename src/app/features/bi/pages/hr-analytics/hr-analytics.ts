@@ -100,7 +100,7 @@ export class HrAnalyticsComponent implements OnInit {
     datasets: [
       {
         data: [],
-        backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#22c55e'],
+        backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#f59e0b'],
       },
     ],
   };
@@ -573,7 +573,7 @@ export class HrAnalyticsComponent implements OnInit {
           datasets: [
             {
               data: data.map((item) => item.value),
-              backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#22c55e'],
+              backgroundColor: ['#5b61f6', '#818cf8', '#e8bc70', '#f59e0b'],
             },
           ],
         };
