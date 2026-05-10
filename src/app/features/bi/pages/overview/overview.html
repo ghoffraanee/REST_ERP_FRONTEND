@@ -156,13 +156,13 @@
     </app-section-title>
 
     <div class="three-col-grid">
-      <div class="card chart-card">
+      <div class="card chart-card deal-status-card">
         <div class="subsection-title">
           <h3>Sales Pipeline Funnel</h3>
           <p>Value distribution across sales stages</p>
         </div>
 
-        <div class="chart-container medium">
+        <div class="chart-container medium pipeline-funnel-chart">
           <canvas
             baseChart
             [data]="pipelineFunnelData"
@@ -177,7 +177,7 @@
           <h3>Deal Status</h3>
         </div>
 
-        <div class="chart-container doughnut-medium">
+        <div class="chart-container small doughnut-wrap deal-status-chart">
           <canvas
             baseChart
             [data]="dealStatusData"
@@ -187,18 +187,21 @@
         </div>
 
         <div class="legend-list">
-          <div class="legend-item">
-            <span><span class="legend-dot won"></span> Won</span>
-            <strong>45%</strong>
-          </div>
-          <div class="legend-item">
-            <span><span class="legend-dot progress"></span> Progress</span>
-            <strong>40%</strong>
-          </div>
-          <div class="legend-item">
-            <span><span class="legend-dot lost"></span> Lost</span>
-            <strong>15%</strong>
-          </div>
+          @for (item of dealStatusLegend; track item.label) {
+            <div class="legend-item">
+      <span>
+        <span
+          class="legend-dot"
+          [class.won]="item.label === 'Won'"
+          [class.progress]="item.label === 'Progress'"
+          [class.lost]="item.label === 'Lost'">
+        </span>
+        {{ item.label }}
+      </span>
+
+              <strong>{{ item.percentage }}</strong>
+            </div>
+          }
         </div>
       </div>
 
@@ -207,20 +210,25 @@
           <h3>Top Sales Performers</h3>
         </div>
 
-        @for (item of topSalesPerformers; track item.name) {
+        @for (item of topSalesPerformers; track item.name; let i = $index) {
           <div class="list-row performer-row">
-            <div>
-              <strong>{{ item.name }}</strong>
-              <small>Top deal volume</small>
+            <div class="performer-left">
+              <div class="rank-badge">{{ i + 1 }}</div>
+
+              <div>
+                <strong>{{ item.name }}</strong>
+                <small>{{ item.dealsCount }} deals</small>
+              </div>
             </div>
+
             <div class="performer-right">
               <strong>{{ item.amount }}</strong>
-              <span>{{ item.trend }}</span>
+              <span>Total value</span>
             </div>
           </div>
         }
 
-        <a class="footer-link" href="#">View Full Leaderboard</a>
+
       </div>
     </div>
   </section>
@@ -258,11 +266,12 @@
         <div class="mini-stats-row">
           <div class="mini-stat-box">
             <small>On-Time Rate</small>
-            <strong>88.4%</strong>
+            <strong>{{ onTimeRateDisplay }}</strong>
           </div>
+
           <div class="mini-stat-box">
             <small>Late Check-ins</small>
-            <strong>142</strong>
+            <strong>{{ lateCheckinsDisplay }}</strong>
           </div>
         </div>
       </div>
@@ -316,12 +325,12 @@
         </div>
 
         <div class="retention-center-text">
-          <strong>92%</strong>
+          <strong>{{ retentionRateDisplay }}</strong>
           <span>Retention</span>
         </div>
 
         <p class="retention-note">
-          Our retention rate has grown by <span>2.4%</span> since the last fiscal audit.
+          {{ retentionNote }}
         </p>
       </div>
 
@@ -363,49 +372,69 @@
     </div>
   </section>
 
-  <section class="overview-section">
-    <app-section-title
-      title="Executive Summary Ledger"
-      subtitle="Consolidated row metrics by reporting period">
-    </app-section-title>
+  <div class="card table-card">
+    <table>
+      <thead>
+      <tr>
+        <th>Period</th>
+        <th>Revenue</th>
+        <th>Expenses</th>
+        <th>Net Profit</th>
+        <th>Deals Won</th>
+        <th>Pipeline</th>
+        <th>Employees</th>
+        <th>Presence</th>
+        <th>Customers</th>
+      </tr>
+      </thead>
 
-    <div class="card table-card">
-      <table>
-        <thead>
-        <tr>
-          <th>Period</th>
-          <th>Revenue</th>
-          <th>Expenses</th>
-          <th>Net Profit</th>
-          <th>Deals Won</th>
-          <th>Pipeline</th>
-          <th>Employees</th>
-          <th>Presence</th>
-          <th>Customers</th>
-        </tr>
-        </thead>
+      <tbody>
+        @for (item of executiveLedger; track item.period) {
+          <tr>
+            <td><strong>{{ item.period }}</strong></td>
+            <td class="money revenue-value">{{ item.revenue }}</td>
 
-        <tbody>
-          @for (item of executiveLedger; track item.period) {
-            <tr>
-              <td><strong>{{ item.period }}</strong></td>
-              <td>{{ item.revenue }}</td>
-              <td class="text-red">{{ item.expenses }}</td>
-              <td class="text-green">{{ item.profit }}</td>
-              <td>{{ item.deals }}</td>
-              <td class="text-orange">{{ item.pipeline }}</td>
-              <td>{{ item.employees }}</td>
-              <td><span class="pill">{{ item.presence }}</span></td>
-              <td><strong>{{ item.customers }}</strong></td>
-            </tr>
-          }
-        </tbody>
-      </table>
+            <td class="money expense-value">{{ item.expenses }}</td>
 
-      <div class="table-footer">
-        <small>Last data synchronization: Today at 08:14 AM (UTC)</small>
-        <button class="download-btn" (click)="exportAsCSV()">Download Full CSV Report</button>
-      </div>
+            <td
+              class="money profit-value"
+              [class.positive-value]="!item.profit.includes('-') && item.profit !== '$0'"
+              [class.negative-value]="item.profit.includes('-')"
+              [class.zero-value]="item.profit === '$0'">
+              {{ item.profit }}
+            </td>
+
+            <td [class.zero-value]="item.deals === 0">
+              {{ item.deals }}
+            </td>
+
+            <td class="money pipeline-value">{{ item.pipeline }}</td>
+
+            <td>{{ item.employees }}</td>
+
+            <td>
+  <span
+    class="presence-pill"
+    [class.presence-good]="item.presence !== '0.00%'"
+    [class.presence-empty]="item.presence === '0.00%'">
+    {{ item.presence }}
+  </span>
+            </td>
+
+            <td [class.zero-value]="item.customers === '0'">
+              <strong>{{ item.customers }}</strong>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="table-footer">
+      <small>Last data synchronization: Today at 08:14 AM (UTC)</small>
+
+      <button class="download-btn" (click)="exportAsCSV()">
+        Download Full CSV Report
+      </button>
     </div>
-  </section>
+  </div>
 </div>

@@ -62,19 +62,20 @@
     }
   </div>
 
-  <app-section-title title="Sales Performance"></app-section-title>
+  <section id="top-salespersons">
+    <app-section-title title="Sales Performance"></app-section-title>
 
-  <div class="two-cols">
-    <div class="chart-card">
-      <canvas
-        baseChart
-        [data]="revenueChartData"
-        [type]="revenueChartType">
-      </canvas>
-    </div>
+    <div class="two-cols">
+      <div class="chart-card">
+        <canvas
+          baseChart
+          [data]="revenueChartData"
+          [type]="revenueChartType">
+        </canvas>
+      </div>
 
-    <div class="card">
-      <h3>Top Sales Representatives</h3>
+      <div class="card">
+        <h3>Top Sales Representatives</h3>
       @for (item of topSales; track item.name) {
         <div class="list-row">
           <span>{{ item.name }}</span>
@@ -83,7 +84,7 @@
       }
     </div>
   </div>
-
+  </section>
   <app-section-title title="Sales Pipeline"></app-section-title>
 
   <div class="two-cols">
@@ -148,10 +149,10 @@
   <app-section-title title="Customer Analytics"></app-section-title>
 
   <div class="customer-revenue-card">
- 
+
   </div>
 
-  
+
 
   <div class="chart-card">
     <canvas

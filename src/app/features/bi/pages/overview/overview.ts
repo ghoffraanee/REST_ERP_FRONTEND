@@ -13,8 +13,18 @@ import {
   OverviewKpiResponse,
   OverviewFinancialTrendItem,
   OverviewCashSummaryItem,
+  OverviewPipelineFunnelItem,
+  OverviewDealStatusItem,
+  OverviewTopSalespersonItem,
+  OverviewAttendanceTrendItem,
+  OverviewDepartmentDistributionItem,
+  OverviewCustomerRetentionItem,
+  OverviewTopCustomerItem,
+  OverviewOperationalAlertItem,
+  OverviewExecutiveLedgerItem,
 } from '../../models/overview-kpi-response';
 import { RouterLink } from '@angular/router';
+
 Chart.register(...registerables);
 type TrendType = 'positive' | 'negative' | 'neutral';
 
@@ -52,6 +62,14 @@ export class OverviewComponent implements OnInit {
     { label: 'Inflow', value: '$0', width: 0, color: 'green' },
     { label: 'Outflow', value: '$0', width: 0, color: 'red' },
   ];
+  dealStatusLegend: {
+    label: string;
+    percentage: string;
+  }[] = [];
+  onTimeRateDisplay = '0%';
+  lateCheckinsDisplay = '0';
+  retentionRateDisplay = '0%';
+  retentionNote = 'Customer retention based on active customers.';
   constructor(private overviewKpiService: OverviewKpiService) {}
 
   ngOnInit(): void {
@@ -103,21 +121,16 @@ export class OverviewComponent implements OnInit {
     },
   ];
 
-  topSalesPerformers = [
-    { name: 'Sarah Connor', amount: '$450k', trend: '+12%' },
-    { name: 'Alex Rivera', amount: '$380k', trend: '+8%' },
-    { name: 'Jordan Belfort', amount: '$310k', trend: '+5%' },
-    { name: 'Mia Wallace', amount: '$240k', trend: '-2%' },
-  ];
+  topSalesPerformers: {
+    name: string;
+    amount: string;
+    dealsCount: number;
+  }[] = [];
 
-  departmentDistribution = [
-    { name: 'Sales & Marketing', value: 240 },
-    { name: 'Research & Dev', value: 180 },
-    { name: 'Operations', value: 320 },
-    { name: 'Customer Support', value: 120 },
-    { name: 'HR & Admin', value: 37 },
-  ];
-
+  departmentDistribution: {
+    name: string;
+    value: number;
+  }[] = [];
   customerRevenue = [
     { name: 'Enterprise', value: 92 },
     { name: 'Mid-Market', value: 64 },
@@ -125,94 +138,25 @@ export class OverviewComponent implements OnInit {
     { name: 'Startup', value: 20 },
   ];
 
-  alertCards = [
-    {
-      category: 'Finance',
-      status: 'Critical',
-      title: 'Overdue Invoices',
-      value: '$42,400',
-      color: 'red',
-    },
-    {
-      category: 'HR',
-      status: 'Warning',
-      title: 'Unscheduled Late',
-      value: '12.4% Avg',
-      color: 'orange',
-    },
-    {
-      category: 'Sales',
-      status: 'Warning',
-      title: 'Lead Drop-off Rate',
-      value: '+5.2% Weekly',
-      color: 'orange',
-    },
-    {
-      category: 'Finance',
-      status: 'Normal',
-      title: 'Operational Burn',
-      value: '$18k / Daily',
-      color: 'green',
-    },
-  ];
+  alertCards: {
+    category: string;
+    status: string;
+    title: string;
+    value: string;
+    color: string;
+  }[] = [];
 
-  executiveLedger = [
-    {
-      period: 'Q2 2024',
-      revenue: '$1.08M',
-      expenses: '$1.16M',
-      profit: '$720K',
-      deals: 84,
-      pipeline: '$2.37M',
-      employees: 897,
-      presence: '94.2%',
-      customers: 1240,
-    },
-    {
-      period: 'Q1 2024',
-      revenue: '$1.45M',
-      expenses: '$0.97M',
-      profit: '$480K',
-      deals: 77,
-      pipeline: '$1.92M',
-      employees: 882,
-      presence: '92.6%',
-      customers: 1180,
-    },
-    {
-      period: 'Q4 2023',
-      revenue: '$1.72M',
-      expenses: '$1.08M',
-      profit: '$640K',
-      deals: 78,
-      pipeline: '$2.15M',
-      employees: 875,
-      presence: '93.6%',
-      customers: 1150,
-    },
-    {
-      period: 'Q3 2023',
-      revenue: '$1.38M',
-      expenses: '$0.92M',
-      profit: '$460K',
-      deals: 65,
-      pipeline: '$1.84M',
-      employees: 860,
-      presence: '91.2%',
-      customers: 1090,
-    },
-    {
-      period: 'Q2 2023',
-      revenue: '$1.22M',
-      expenses: '$0.85M',
-      profit: '$370K',
-      deals: 58,
-      pipeline: '$1.62M',
-      employees: 845,
-      presence: '90.5%',
-      customers: 1020,
-    },
-  ];
+  executiveLedger: {
+    period: string;
+    revenue: string;
+    expenses: string;
+    profit: string;
+    deals: number;
+    pipeline: string;
+    employees: string;
+    presence: string;
+    customers: string;
+  }[] = [];
 
   commonLineOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -463,6 +407,219 @@ export class OverviewComponent implements OnInit {
       },
     ];
   }
+  private loadSalesPipelineFunnel(): void {
+    this.overviewKpiService.getSalesPipelineFunnel(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applySalesPipelineFunnel(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Sales Pipeline Funnel:', error);
+      },
+    });
+  }
+
+  private applySalesPipelineFunnel(data: OverviewPipelineFunnelItem[]): void {
+    this.pipelineFunnelData = {
+      labels: data.map((item) => item.stage),
+      datasets: [
+        {
+          data: data.map((item) => this.toMillions(item.pipelineValue)),
+          label: 'Pipeline Value',
+          backgroundColor: '#f59e0b',
+        },
+      ],
+    };
+  }
+  private loadAttendanceTrend(): void {
+    this.overviewKpiService.getAttendanceTrend(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyAttendanceTrend(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Attendance Trend:', error);
+      },
+    });
+  }
+
+  private applyAttendanceTrend(data: OverviewAttendanceTrendItem[]): void {
+    this.attendanceTrendData = {
+      labels: data.map((item) => item.period),
+      datasets: [
+        {
+          data: data.map((item) => item.presenceRate),
+          label: 'Presence Rate',
+          tension: 0.4,
+          fill: false,
+          borderColor: '#4f46e5',
+        },
+      ],
+    };
+
+    this.attendanceTrendMiniData = {
+      labels: data.map((item) => item.period),
+      datasets: [
+        {
+          data: data.map((item) => item.lateCheckins),
+          label: 'Late Check-ins',
+          tension: 0.4,
+          fill: false,
+          borderColor: '#b4b1ff',
+        },
+      ],
+    };
+
+    const latest = data.length > 0 ? data[data.length - 1] : null;
+
+    this.onTimeRateDisplay = latest ? this.formatPercent(latest.onTimeRate) : '0%';
+
+    this.lateCheckinsDisplay = latest ? this.formatNumber(latest.lateCheckins) : '0';
+  }
+
+  private loadDepartmentDistribution(): void {
+    this.overviewKpiService.getDepartmentDistribution().subscribe({
+      next: (data) => {
+        this.applyDepartmentDistribution(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Department Distribution:', error);
+      },
+    });
+  }
+
+  private applyDepartmentDistribution(data: OverviewDepartmentDistributionItem[]): void {
+    this.departmentDistribution = data.map((item) => ({
+      name: item.departmentName,
+      value: item.employeeCount,
+    }));
+  }
+
+  private loadCustomerRetention(): void {
+    this.overviewKpiService.getCustomerRetention().subscribe({
+      next: (data) => {
+        this.applyCustomerRetention(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Customer Retention:', error);
+      },
+    });
+  }
+
+  private applyCustomerRetention(data: OverviewCustomerRetentionItem): void {
+    const retentionRate = data.retentionRate ?? 0;
+    const inactiveRate = Math.max(0, 100 - retentionRate);
+
+    this.retentionData = {
+      labels: ['Retention', 'Inactive'],
+      datasets: [
+        {
+          data: [retentionRate, inactiveRate],
+          backgroundColor: ['#e58e2b', '#f8e0c3'],
+          hoverBackgroundColor: ['#e58e2b', '#f8e0c3'],
+          borderWidth: 0,
+        },
+      ],
+    };
+
+    this.retentionRateDisplay = `${retentionRate.toFixed(2)}%`;
+
+    this.retentionNote = `${this.formatNumber(data.activeCustomers)} active customers out of ${this.formatNumber(data.totalCustomers)} total customers.`;
+  }
+
+  private loadTopCustomersByRevenue(): void {
+    this.overviewKpiService.getTopCustomersByRevenue(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyTopCustomersByRevenue(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Top Customers by Revenue:', error);
+      },
+    });
+  }
+
+  private applyTopCustomersByRevenue(data: OverviewTopCustomerItem[]): void {
+    this.customerRevenue = data.map((item) => ({
+      name: item.customerName,
+      value: this.toMillions(item.revenue),
+    }));
+
+    this.customerRevenueData = {
+      labels: data.map((item) => item.customerName),
+      datasets: [
+        {
+          data: data.map((item) => this.toMillions(item.revenue)),
+          label: 'Revenue',
+          backgroundColor: '#f59e0b',
+        },
+      ],
+    };
+  }
+
+  private loadOperationalAlerts(): void {
+    this.overviewKpiService.getOperationalAlerts(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyOperationalAlerts(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Operational Alerts:', error);
+      },
+    });
+  }
+
+  private applyOperationalAlerts(data: OverviewOperationalAlertItem[]): void {
+    this.alertCards = data.map((item) => ({
+      category: item.category,
+      status: item.status,
+      title: item.title,
+      value: this.formatAlertValue(item),
+      color: item.color,
+    }));
+  }
+
+  private formatAlertValue(item: OverviewOperationalAlertItem): string {
+    const suffix = item.valueSuffix ?? '';
+
+    if (item.title === 'Overdue Invoices') {
+      return this.formatCompactCurrency(item.value);
+    }
+
+    if (item.title === 'Operational Burn') {
+      return `${this.formatCompactCurrency(item.value)}${suffix}`;
+    }
+
+    if (item.title === 'Unscheduled Late') {
+      return `${item.value.toFixed(2)}${suffix}`;
+    }
+
+    if (item.title === 'Lead Drop-off Rate') {
+      return `${item.value.toFixed(2)}${suffix}`;
+    }
+
+    return `${item.value}${suffix}`;
+  }
+  private loadExecutiveLedger(): void {
+    this.overviewKpiService.getExecutiveLedger(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyExecutiveLedger(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Executive Ledger:', error);
+      },
+    });
+  }
+
+  private applyExecutiveLedger(data: OverviewExecutiveLedgerItem[]): void {
+    this.executiveLedger = data.map((item) => ({
+      period: item.period,
+      revenue: this.formatCompactCurrency(item.revenue),
+      expenses: this.formatCompactCurrency(item.expenses),
+      profit: this.formatSignedCompactCurrency(item.netProfit),
+      deals: item.dealsWon,
+      pipeline: this.formatCompactCurrency(item.pipeline),
+      employees: this.formatNumber(item.employees),
+      presence: this.formatPercent(item.presenceRate),
+      customers: this.formatNumber(item.customers),
+    }));
+  }
   toggleExportMenu(): void {
     this.isExportMenuOpen = !this.isExportMenuOpen;
   }
@@ -546,7 +703,7 @@ export class OverviewComponent implements OnInit {
         section: 'Top Sales Performers',
         name: item.name,
         amount: item.amount,
-        trend: item.trend,
+        dealsCount: item.dealsCount,
       })),
       ...this.departmentDistribution.map((item) => ({
         section: 'Department Distribution',
@@ -588,8 +745,9 @@ export class OverviewComponent implements OnInit {
   }
 
   getDeptWidth(value: number): string {
-    const max = 320;
-    return `${(value / max) * 100}%`;
+    const max = Math.max(...this.departmentDistribution.map((item) => item.value), 1);
+
+    return `${Math.round((value / max) * 100)}%`;
   }
 
   setPeriod(period: 'last30days' | 'last6months' | 'yearToDate'): void {
@@ -617,6 +775,15 @@ export class OverviewComponent implements OnInit {
     this.loadOverviewKpis();
     this.loadFinancialTrend();
     this.loadCashSummary();
+    this.loadSalesPipelineFunnel();
+    this.loadDealStatus();
+    this.loadTopSalesPerformers();
+    this.loadAttendanceTrend();
+    this.loadDepartmentDistribution();
+    this.loadCustomerRetention();
+    this.loadTopCustomersByRevenue();
+    this.loadOperationalAlerts();
+    this.loadExecutiveLedger();
   }
 
   private loadOverviewKpis(): void {
@@ -713,5 +880,67 @@ export class OverviewComponent implements OnInit {
       notation: 'compact',
       maximumFractionDigits: 2,
     }).format(safeValue);
+  }
+
+  private loadDealStatus(): void {
+    this.overviewKpiService.getDealStatus(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyDealStatus(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Deal Status:', error);
+      },
+    });
+  }
+
+  private applyDealStatus(data: OverviewDealStatusItem[]): void {
+    this.dealStatusData = {
+      labels: data.map((item) => item.status),
+      datasets: [
+        {
+          data: data.map((item) => item.percentage),
+          backgroundColor: ['#f59e0b', '#f7c98f', '#f3e1c6'],
+          borderWidth: 0,
+        },
+      ],
+    };
+
+    this.dealStatusLegend = data.map((item) => ({
+      label: item.status,
+      percentage: `${item.percentage.toFixed(2)}%`,
+    }));
+  }
+  private loadTopSalesPerformers(): void {
+    this.overviewKpiService.getTopSalesPerformers(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        this.applyTopSalesPerformers(data);
+      },
+      error: (error) => {
+        console.error('Erreur chargement Top Sales Performers:', error);
+      },
+    });
+  }
+
+  private applyTopSalesPerformers(data: OverviewTopSalespersonItem[]): void {
+    this.topSalesPerformers = data.map((item) => ({
+      name: item.salespersonName,
+      amount: this.formatCompactCurrency(item.totalRevenue),
+      dealsCount: item.dealsCount,
+    }));
+  }
+
+  private formatSignedCompactCurrency(value: number | null | undefined): string {
+    const safeValue = value ?? 0;
+    const formatted = this.formatCompactCurrency(Math.abs(safeValue));
+
+    if (safeValue > 0) {
+      return `+${formatted}`;
+    }
+
+    if (safeValue < 0) {
+      return `-${formatted}`;
+    }
+
+    return '$0';
   }
 }

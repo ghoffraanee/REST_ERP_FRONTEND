@@ -504,20 +504,20 @@
   justify-content: space-between;
   align-items: center;
   color: #7b8494;
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
 }
 
 .alert-title {
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 19px;
   color: #1f2937;
   font-weight: 600;
 }
 
 .alert-value {
   margin-top: 8px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #4f46e5;
 }
@@ -540,12 +540,14 @@ td {
 
 thead th {
   color: #6b7280;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 17px;
   border-bottom: 1px solid #edf1f7;
 }
 
 tbody td {
   color: #1f2937;
+  font-size: 16px;
   border-bottom: 1px solid #f8fafc;
 }
 
@@ -652,4 +654,106 @@ tbody td {
 
 .export-menu button:hover {
   background: #f5f7fb;
+}
+.three-col-grid .chart-card:first-child {
+  min-height: 520px;
+}
+
+.three-col-grid .chart-card:first-child .pipeline-funnel-chart {
+  height: 420px !important;
+  min-height: 420px !important;
+}
+
+.three-col-grid .chart-card:first-child canvas {
+  height: 100% !important;
+}
+.deal-status-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+}
+
+.deal-status-chart {
+  flex: 1;
+  min-height: 320px !important;
+  height: 320px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deal-status-chart canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+.performer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rank-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #5b61f6;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.money {
+  font-weight: 600;
+}
+
+.revenue-value {
+  color: #2563eb;
+}
+
+.expense-value {
+  color: #ef4444;
+}
+
+.pipeline-value {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.positive-value {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.negative-value {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.zero-value {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+}
+
+.presence-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.presence-good {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.presence-empty {
+  background: #eef2ff;
+  color: #4f46e5;
 }
