@@ -100,7 +100,7 @@ export class HrAnalyticsComponent implements OnInit {
     datasets: [
       {
         data: [],
-        backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#22c55e'],
+        backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#f59e0b'],
       },
     ],
   };
@@ -573,7 +573,7 @@ export class HrAnalyticsComponent implements OnInit {
           datasets: [
             {
               data: data.map((item) => item.value),
-              backgroundColor: ['#5b61f6', '#818cf8', '#38bdf8', '#22c55e'],
+              backgroundColor: ['#5b61f6', '#818cf8', '#e8bc70', '#f59e0b'],
             },
           ],
         };
@@ -784,12 +784,13 @@ export class HrAnalyticsComponent implements OnInit {
         value: item.value,
         trend: item.trend,
       })),
-      ...this.upcomingBirthdays.map((item) => ({
-        section: 'Upcoming Birthdays',
-        employee: item.employee,
-        department: item.department,
-        remaining_days: item.remainingDays,
-      })),
+      ...this.upcomingBirthdays.map((item, index) => ({
+      section: 'Upcoming Birthdays',
+      rank: index + 1,
+      employee: item.employee,
+      department: item.department,
+      remaining_days: item.remainingDays,
+    })),
     ];
   }
   formatCurrency(value: number | null | undefined): string {

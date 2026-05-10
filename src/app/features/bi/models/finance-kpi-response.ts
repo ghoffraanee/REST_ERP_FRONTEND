@@ -1,4 +1,5 @@
 export interface FinanceKpiResponse {
+  currency: string;
   totalRevenue: number;
   totalExpenses: number;
   netProfit: number;

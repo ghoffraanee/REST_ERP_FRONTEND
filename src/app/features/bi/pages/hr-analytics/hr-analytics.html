@@ -114,7 +114,7 @@
       subtitle="">
     </app-section-title>
 
-    <div class="kpi-grid kpi-grid-5">
+    <div class="kpi-grid attendance-kpi-grid">
       @for (item of attendanceKpis; track item.title) {
         <app-kpi-card
           [title]="item.title"
@@ -150,98 +150,103 @@
         </div>
 
         <table>
-          <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Department</th>
-            <th>Remaining days</th>
-          </tr>
-          </thead>
-          <tbody>
-            @for (item of upcomingBirthdays; track item.employee) {
-              <tr>
-                <td>{{ item.employee }}</td>
-                <td>{{ item.department }}</td>
-                <td>{{ item.remainingDays }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Employee</th>
+      <th>Department</th>
+      <th>Remaining days</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  @for (item of upcomingBirthdays; track item.employee; let i = $index) {
+    <tr>
+      <td>
+        <span class="rank-number birthday-rank">{{ i + 1 }}</span>
+      </td>
+      <td>{{ item.employee }}</td>
+      <td>{{ item.department }}</td>
+      <td>{{ item.remainingDays }}</td>
+    </tr>
+  }
+</tbody>
+</table>
       </div>
     </div>
   </section>
 
-  <div class="bottom-sections">
-    <section class="dashboard-section half">
-      <app-section-title
-        title="Payroll"
-        subtitle="">
-      </app-section-title>
+  <div class="payroll-recruitment-wrapper">
+  <section class="analytics-block payroll-block">
+    <app-section-title 
+      title="Payroll"
+      subtitle="Salary, payroll cost and employee compensation overview.">
+    </app-section-title>
 
-      <div class="kpi-grid kpi-grid-2">
-        @for (item of payrollKpis; track item.title) {
-          <app-kpi-card
-            [title]="item.title"
-            [value]="item.value"
-            [trend]="item.trend"
-            [icon]="item.icon"
-            [trendType]="item.trendType">
-          </app-kpi-card>
-        }
+    <div class="sub-kpi-grid">
+      @for (item of payrollKpis; track item.title) {
+        <app-kpi-card
+          [title]="item.title"
+          [value]="item.value"
+          [trend]="item.trend"
+          [icon]="item.icon"
+          [trendType]="item.trendType">
+        </app-kpi-card>
+      }
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Salary Benchmarking</h3>
+        <p>Average vs Maximum compensation by department.</p>
       </div>
 
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>Salary Benchmarking</h3>
-          <p>Average vs Maximum compensation by department.</p>
-        </div>
-
-        <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="salaryBenchmarkChartData"
-            [type]="salaryBenchmarkChartType"
-            [options]="salaryBenchmarkChartOptions">
-          </canvas>
-        </div>
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="salaryBenchmarkChartData"
+          [type]="salaryBenchmarkChartType"
+          [options]="salaryBenchmarkChartOptions">
+        </canvas>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="dashboard-section half">
-      <app-section-title
-        title="Recruitment"
-        subtitle="">
-      </app-section-title>
+  <section class="analytics-block recruitment-block">
+    <app-section-title
+      title="Recruitment"
+      subtitle="Hiring activity, applications and conversion performance.">
+    </app-section-title>
 
-      <div class="kpi-grid kpi-grid-2">
-        @for (item of recruitmentKpis; track item.title) {
-          <app-kpi-card
-            [title]="item.title"
-            [value]="item.value"
-            [trend]="item.trend"
-            [icon]="item.icon"
-            [trendType]="item.trendType">
-          </app-kpi-card>
-        }
+    <div class="sub-kpi-grid">
+      @for (item of recruitmentKpis; track item.title) {
+        <app-kpi-card
+          [title]="item.title"
+          [value]="item.value"
+          [trend]="item.trend"
+          [icon]="item.icon"
+          [trendType]="item.trendType">
+        </app-kpi-card>
+      }
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Hiring Funnel</h3>
+        <p>Pipeline efficiency from initial application to final hire.</p>
       </div>
 
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>Hiring Funnel</h3>
-          <p>Pipeline efficiency from initial application to final hire.</p>
-        </div>
-
-        <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="hiringFunnelChartData"
-            [type]="hiringFunnelChartType"
-            [options]="commonChartOptions">
-          </canvas>
-        </div>
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="hiringFunnelChartData"
+          [type]="hiringFunnelChartType"
+          [options]="commonChartOptions">
+        </canvas>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
+</div>
 
   <div class="footer-kpis">
     @for (item of footerKpis; track item.title) {

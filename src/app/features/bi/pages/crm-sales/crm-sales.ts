@@ -16,6 +16,7 @@ import { SectionTitleComponent } from '../../components/section-title/section-ti
 import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
 import { SalesService } from '../../services/sales.service';
 import { SalesKpiResponse } from '../../models/sales-kpi-response';
+import { BiFormatService } from '../../services/bi-format.service';
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
@@ -94,6 +95,8 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
   endDate = '';
   isExportMenuOpen = false;
   isLoading = false;
+  private biFormat = inject(BiFormatService);
+  currency = '';
 
   // ── Data ───────────────────────────────────────────────────────────────────
   kpis: KpiCard[] = [];
@@ -197,6 +200,7 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
     )
     .subscribe({
       next: (results) => {
+        this.currency = results.kpis.currency || '';
         this.applySalesKpis(results.kpis);
         this.applyRevenueTrend(results.revenueTrend);
         this.applyPipelineDistribution(results.pipeline);
@@ -260,6 +264,20 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
     }));
   }
 
+  getOrderStatusClass(status: string): string {
+  const normalizedStatus = (status || '').toLowerCase();
+
+  if (normalizedStatus === 'close' ) {
+    return 'status-close';
+  }
+
+  if (normalizedStatus === 'open') {
+    return 'status-open';
+  }
+
+  return 'status-default';
+}
+
   private applyRevenueByProduct(data: { name: string; amount: number }[]): void {
     this.revenueByProductChartData = {
       labels: data.map(i => i.name),
@@ -307,13 +325,9 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
 
   // ── Formatage ──────────────────────────────────────────────────────────────
 
-  formatCurrency(value: number | null | undefined): string {
-    const n = value ?? 0;
-    if (n >= 1e9) return `${this.toShort(n / 1e9)} B DT`;
-    if (n >= 1e6) return `${this.toShort(n / 1e6)} M DT`;
-    if (n >= 1e3) return `${this.toShort(n / 1e3)} K DT`;
-    return `${this.toShort(n)} DT`;
-  }
+ formatCurrency(value: number | null | undefined): string {
+  return this.biFormat.formatCurrency(value, this.currency);
+}
 
   private toShort(value: number): string {
     return value.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ');
@@ -394,7 +408,12 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
   private buildExportRows(): object[] {
     return [
       ...this.kpis.map(i => ({ section: 'KPIs', title: i.title, value: i.value, trend: i.trend })),
-      ...this.topSales.map(i => ({ section: 'Top Sales Representatives', name: i.name, amount: i.amount })),
+      ...this.topSales.map((item, index) => ({
+        section: 'Top Sales Representatives',
+        rank: index + 1,
+        name: item.name,
+        amount: item.amount
+      })),
       ...this.highValueDeals.map(i => ({ section: 'High Value Deals', name: i.name, value: i.value })),
       ...this.salesOrders.map(i => ({ section: 'Orders and Invoices', ...i })),
       ...this.regionalConversions.map(i => ({ section: 'Regional Conversion Rates', region: i.region, value: i.value, trend: i.trend })),

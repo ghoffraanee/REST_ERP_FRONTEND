@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild,inject  } from '@angular/core';
 import { Chart, registerables, ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import html2canvas from 'html2canvas';
@@ -14,6 +14,8 @@ import {
   FinanceLiabilityAssetItem,
   FinanceAssetDistributionItem,
 } from '../../models/finance-kpi-response';
+import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
+import { BiFormatService } from '../../services/bi-format.service';
 
 Chart.register(...registerables);
 
@@ -33,7 +35,7 @@ interface FinanceKpiCard {
 @Component({
   selector: 'app-finance-analytics',
   standalone: true,
-  imports: [SectionTitleComponent, BaseChartDirective],
+  imports: [SectionTitleComponent, BaseChartDirective,KpiCardComponent],
   templateUrl: './finance-analytics.html',
   styleUrl: './finance-analytics.css',
 })
@@ -47,15 +49,17 @@ export class FinanceAnalyticsComponent implements OnInit {
 
   startDate = '';
   endDate = '';
+  private biFormat = inject(BiFormatService);
+  currency = '';
 
-  totalLiabilitiesDisplay = '$0';
-  assetValueDisplay = '$0';
+  totalLiabilitiesDisplay = '0';
+  assetValueDisplay = '0';
 
   assetDistributionLegend: {
     label: string;
     value: string;
   }[] = [];
-  depreciationExpenseDisplay = '$0';
+  depreciationExpenseDisplay = '0';
   complianceStatus = 'Full Compliance';
   complianceStatusIcon = '◔';
 
@@ -358,24 +362,26 @@ export class FinanceAnalyticsComponent implements OnInit {
     this.loadAssetDistribution();
   }
   private loadFinanceKpis(): void {
-    this.loadingKpis = true;
-    this.kpiErrorMessage = '';
+  this.loadingKpis = true;
+  this.kpiErrorMessage = '';
 
-    this.financeKpiService.getFinanceKpis(this.startDate, this.endDate).subscribe({
-      next: (data) => {
-        console.log('Finance KPIs reçus:', data);
-        console.log('Période utilisée:', this.startDate, this.endDate);
+  this.financeKpiService.getFinanceKpis(this.startDate, this.endDate).subscribe({
+    next: (data) => {
+      console.log('Finance KPIs reçus:', data);
+      console.log('Période utilisée:', this.startDate, this.endDate);
 
-        this.applyFinanceKpis(data);
-        this.loadingKpis = false;
-      },
-      error: (error) => {
-        console.error('Erreur chargement KPIs Finance:', error);
-        this.kpiErrorMessage = 'Impossible de charger les KPIs Finance.';
-        this.loadingKpis = false;
-      },
-    });
-  }
+      this.currency = data.currency || '';
+
+      this.applyFinanceKpis(data);
+      this.loadingKpis = false;
+    },
+    error: (error) => {
+      console.error('Erreur chargement KPIs Finance:', error);
+      this.kpiErrorMessage = 'Impossible de charger les KPIs Finance.';
+      this.loadingKpis = false;
+    },
+  });
+}
 
   private applyFinanceKpis(data: FinanceKpiResponse): void {
     this.overviewKpis = [
@@ -513,14 +519,8 @@ export class FinanceAnalyticsComponent implements OnInit {
   }
 
   private formatCurrency(value: number | null | undefined): string {
-    const safeValue = value ?? 0;
-
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(safeValue);
-  }
+  return this.biFormat.formatCurrency(value, this.currency);
+}
 
   private formatPercent(value: number | null | undefined): string {
     const safeValue = value ?? 0;
