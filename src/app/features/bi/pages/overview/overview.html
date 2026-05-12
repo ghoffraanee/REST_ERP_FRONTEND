@@ -310,28 +310,30 @@
     </app-section-title>
 
     <div class="two-col-grid">
-      <div class="card">
+      <div class="card customer-retention-card">
         <div class="subsection-title">
           <h3>Customer Retention</h3>
         </div>
 
-        <div class="chart-container retention">
-          <canvas
-            baseChart
-            [data]="retentionData"
-            [type]="retentionType"
-            [options]="doughnutOptions">
-          </canvas>
-        </div>
+        <div class="retention-content">
+          <div class="chart-container retention retention-chart-side">
+            <canvas
+              baseChart
+              [data]="retentionData"
+              [type]="retentionType"
+              [options]="doughnutOptions">
+            </canvas>
+          </div>
 
-        <div class="retention-center-text">
-          <strong>{{ retentionRateDisplay }}</strong>
-          <span>Retention</span>
-        </div>
+          <div class="retention-side-info">
+            <strong>{{ retentionRateDisplay }}</strong>
+            <span>Retention</span>
 
-        <p class="retention-note">
-          {{ retentionNote }}
-        </p>
+            <p>
+              {{ retentionNote }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div class="card">

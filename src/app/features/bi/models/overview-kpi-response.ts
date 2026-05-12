@@ -5,6 +5,7 @@ export interface OverviewKpiResponse {
   netProfit: number;
   winRate: number;
   pipelineValue: number;
+  currency: string;
 }
 export interface OverviewFinancialTrendItem {
   period: string;

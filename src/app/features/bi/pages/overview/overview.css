@@ -3,7 +3,9 @@
   flex-direction: column;
   gap: 24px;
 }
-
+.top-kpi-grid ::ng-deep .kpi-value {
+  font-size: 22px;
+}
 .top-toolbar {
   display: flex;
   justify-content: space-between;
@@ -136,6 +138,7 @@
 }
 
 .top-kpi-grid {
+
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 16px;
@@ -444,13 +447,56 @@
 }
 
 .retention-center-text {
+  font-size: 24px;
   position: relative;
   margin-top: -118px;
   margin-bottom: 90px;
   text-align: center;
   z-index: 2;
 }
+.customer-retention-card {
+  min-height: 330px;
+}
 
+.retention-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  margin-top: 10px;
+}
+
+.retention-chart-side {
+  width: 220px;
+  height: 220px;
+  margin: 0;
+}
+
+.retention-side-info {
+  max-width: 260px;
+}
+
+.retention-side-info strong {
+  display: block;
+  font-size: 34px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.1;
+}
+
+.retention-side-info span {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #7b8494;
+}
+
+.retention-side-info p {
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #64748b;
+}
 .retention-center-text strong {
   display: block;
   font-size: 28px;
@@ -596,6 +642,7 @@ tbody td {
 
 @media (max-width: 1450px) {
   .top-kpi-grid {
+
     grid-template-columns: repeat(3, 1fr);
   }
 
