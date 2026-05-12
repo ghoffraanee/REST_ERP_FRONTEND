@@ -64,9 +64,20 @@ getTenureDistribution() {
   );
 }
 
-getEmployeesByDepartment() {
+getEmployeesByDepartment(startDate?: string, endDate?: string) {
+  let params = new HttpParams();
+
+  if (startDate) {
+    params = params.set('startDate', startDate);
+  }
+
+  if (endDate) {
+    params = params.set('endDate', endDate);
+  }
+
   return this.http.get<any[]>(
-    `${this.apiUrl}/employees-by-department`
+    `${this.apiUrl}/employees-by-department`,
+    { params }
   );
 }
 

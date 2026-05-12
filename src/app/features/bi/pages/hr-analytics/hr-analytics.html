@@ -74,7 +74,7 @@
             baseChart
             [data]="headcountChartData"
             [type]="headcountChartType"
-            [options]="commonChartOptions">
+            [options]="headcountChartOptions">
           </canvas>
         </div>
       </div>
@@ -99,7 +99,9 @@
 
   <app-section-title title="Employees by Department"></app-section-title>
 
-<div class="chart-card">
+<div 
+  class="chart-card"
+  [style.height.px]="employeesByDepartmentChartHeight">
   <canvas
     baseChart
     [data]="employeesByDepartmentChartData"
@@ -241,7 +243,7 @@
           baseChart
           [data]="hiringFunnelChartData"
           [type]="hiringFunnelChartType"
-          [options]="commonChartOptions">
+          [options]="hiringFunnelChartOptions">
         </canvas>
       </div>
     </div>

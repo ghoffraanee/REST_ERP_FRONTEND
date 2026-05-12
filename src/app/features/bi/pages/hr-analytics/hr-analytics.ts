@@ -92,6 +92,35 @@ export class HrAnalyticsComponent implements OnInit {
       },
     ],
   };
+  headcountChartOptions: ChartConfiguration<'line'>['options'] = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+          return `Headcount: ${context.parsed.y}`;
+        },
+      },
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
+      },
+    },
+    x: {
+      ticks: {
+        autoSkip: false,
+      },
+    },
+  },
+};
 
   tenureChartType: 'doughnut' = 'doughnut';
 
@@ -207,20 +236,35 @@ export class HrAnalyticsComponent implements OnInit {
     ],
   };
 
-  hiringFunnelChartOptions: ChartConfiguration<'bar'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
+ hiringFunnelChartOptions: ChartConfiguration<'bar'>['options'] = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+          return `${context.parsed.y} applications`;
+        },
       },
     },
-    scales: {
-      y: {
-        beginAtZero: true,
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
       },
     },
-  };
+    x: {
+      ticks: {
+        autoSkip: false,
+      },
+    },
+  },
+};
 
   employeesByDepartmentChartType: 'bar' = 'bar';
 
@@ -234,23 +278,41 @@ export class HrAnalyticsComponent implements OnInit {
       },
     ],
   };
+  employeesByDepartmentChartHeight = 500;
 
   employeesByDepartmentChartOptions: ChartConfiguration<'bar'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    indexAxis: 'y',
-    plugins: {
-      legend: {
-        display: false,
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y',
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+          return `Employees: ${context.parsed.x}`;
+        },
       },
     },
-    scales: {
-      x: {
-        beginAtZero: true,
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
       },
     },
-  };
-
+    y: {
+      ticks: {
+        autoSkip: false,
+        font: {
+          size: 12,
+        },
+      },
+    },
+  },
+};
   ngOnInit(): void {
     this.setPeriod('6months');
   }
@@ -516,25 +578,27 @@ export class HrAnalyticsComponent implements OnInit {
   }
 
   loadHeadcountTrend(): void {
-    this.hrService.getHeadcountTrend(this.startDate, this.endDate).subscribe({
-      next: (data: any[]) => {
-        this.headcountChartData = {
-          labels: data.map((item) => item.label),
-          datasets: [
-            {
-              data: data.map((item) => item.value),
-              label: 'Headcount',
-              fill: true,
-              tension: 0.4,
-              borderColor: '#5b61f6',
-              backgroundColor: 'rgba(91,97,246,0.2)',
-            },
-          ],
-        };
-      },
-      error: (err) => console.error(err),
-    });
-  }
+  this.hrService.getHeadcountTrend(this.startDate, this.endDate).subscribe({
+    next: (data: any[]) => {
+      console.log('Headcount trend:', data);
+
+      this.headcountChartData = {
+        labels: data.map((item) => item.period),
+        datasets: [
+          {
+            data: data.map((item) => Number(item.headcount ?? 0)),
+            label: 'Headcount',
+            fill: true,
+            tension: 0.4,
+            borderColor: '#5b61f6',
+            backgroundColor: 'rgba(91,97,246,0.2)',
+          },
+        ],
+      };
+    },
+    error: (err) => console.error('Erreur headcount trend', err),
+  });
+}
 
   loadAttendanceTrend(): void {
     this.hrService.getAttendanceTrend(this.startDate, this.endDate).subscribe({
@@ -584,25 +648,27 @@ export class HrAnalyticsComponent implements OnInit {
     });
   }
 
-  loadEmployeesByDepartment(): void {
-    this.hrService.getEmployeesByDepartment().subscribe({
-      next: (data: any[]) => {
-        this.employeesByDepartmentChartData = {
-          labels: data.map((item) => item.department),
-          datasets: [
-            {
-              data: data.map((item) => item.count),
-              label: 'Employees',
-              backgroundColor: '#5b61f6',
-            },
-          ],
-        };
-      },
-      error: (err: unknown) => {
-        console.error('Erreur employees by department', err);
-      },
-    });
-  }
+loadEmployeesByDepartment(): void {
+  this.hrService.getEmployeesByDepartment(this.startDate, this.endDate).subscribe({
+    next: (data: any[]) => {
+      this.employeesByDepartmentChartHeight = Math.max(500, data.length * 38);
+
+      this.employeesByDepartmentChartData = {
+        labels: data.map((item) => item.department),
+        datasets: [
+          {
+            data: data.map((item) => Number(item.count ?? 0)),
+            label: 'Employees',
+            backgroundColor: '#5b61f6',
+          },
+        ],
+      };
+    },
+    error: (err: unknown) => {
+      console.error('Erreur employees by department', err);
+    },
+  });
+}
 
   loadSalaryBenchmarking(): void {
     console.log('CALL SALARY BENCHMARKING', this.startDate, this.endDate);

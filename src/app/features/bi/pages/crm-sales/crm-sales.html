@@ -71,6 +71,7 @@
         [data]="revenueChartData"
         [type]="revenueChartType">
       </canvas>
+<<<<<<< HEAD
     </div>
 
     <div class="card">
@@ -161,6 +162,106 @@
   </div>
 
 
+
+  <div class="chart-card">
+    <canvas
+      baseChart
+      [data]="retentionChartData"
+      [type]="retentionChartType">
+    </canvas>
+  </div>
+=======
+    </div>
+
+    <div class="card">
+      <h3>Top Sales Representatives</h3>
+
+      @for (item of topSales; track item.name; let i = $index) {
+        <div class="list-row">
+          <div class="ranked-name">
+            <span class="rank-number">{{ i + 1 }}</span>
+            <span>{{ item.name }}</span>
+          </div>
+
+          <strong>{{ item.amount }}</strong>
+        </div>
+      }
+    </div>
+  </div>
+
+  <app-section-title title="Sales Pipeline"></app-section-title>
+
+  <div class="two-cols">
+    <div class="chart-card">
+      <canvas
+        baseChart
+        [data]="pipelineChartData"
+        [type]="pipelineChartType">
+      </canvas>
+    </div>
+
+    <div class="card">
+      <h3>High-Value Deals</h3>
+      <div class="list">
+  @for (item of highValueDeals; track item.name) {
+    <div class="list-row">
+       <span>{{ item.name }}</span>
+<strong>{{ item.value }}</strong>
+    </div>
+  }
+>>>>>>> a986ba158cf761f7cfdf8b4d669be02b21e31d0f
+</div>
+    </div>
+  </div>
+
+  <app-section-title title="Orders & Invoices"></app-section-title>
+
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Customer</th>
+      <th>Date</th>
+      <th>Amount</th>
+      <th>Status</th>
+    </tr>
+    </thead>
+
+    <tbody>
+      @for (item of salesOrders; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.customer }}</td>
+          <td>{{ item.date }}</td>
+          <td>{{ item.amount }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getOrderStatusClass(item.status)">
+              {{ item.status }}
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <app-section-title title="Revenue by Product"></app-section-title>
+
+<div class="chart-card">
+  <canvas
+    baseChart
+    [data]="revenueByProductChartData"
+    [type]="revenueByProductChartType"
+    [options]="revenueByProductChartOptions">
+  </canvas>
+</div>
+
+  <app-section-title title="Customer Analytics"></app-section-title>
+
+  <div class="customer-revenue-card">
+ 
+  </div>
+
+  
 
   <div class="chart-card">
     <canvas
