@@ -7,24 +7,24 @@
 
     <div class="page-header-right" data-html2canvas-ignore="true">
       <div class="period-group">
-  <button
-    [class.active]="selectedPeriod === '30days'"
-    (click)="setPeriod('30days')">
-    Last 30 Days
-  </button>
+        <button
+          [class.active]="selectedPeriod === '30days'"
+          (click)="setPeriod('30days')">
+          Last 30 Days
+        </button>
 
-  <button
-    [class.active]="selectedPeriod === '6months'"
-    (click)="setPeriod('6months')">
-    Last 6 Months
-  </button>
+        <button
+          [class.active]="selectedPeriod === '6months'"
+          (click)="setPeriod('6months')">
+          Last 6 Months
+        </button>
 
-  <button
-    [class.active]="selectedPeriod === 'ytd'"
-    (click)="setPeriod('ytd')">
-    Year to Date
-  </button>
-</div>
+        <button
+          [class.active]="selectedPeriod === 'ytd'"
+          (click)="setPeriod('ytd')">
+          Year to Date
+        </button>
+      </div>
 
       <div class="header-divider"></div>
 
@@ -103,13 +103,13 @@
     <div class="card">
       <h3>High-Value Deals</h3>
       <div class="list">
-  @for (item of highValueDeals; track item.name) {
-    <div class="list-row">
-       <span>{{ item.name }}</span>
-<strong>{{ item.value }}</strong>
-    </div>
-  }
-</div>
+        @for (item of highValueDeals; track item.name) {
+          <div class="list-row">
+            <span>{{ item.name }}</span>
+            <strong>{{ item.value }}</strong>
+          </div>
+        }
+      </div>
     </div>
   </div>
 
@@ -145,22 +145,22 @@
 
   <app-section-title title="Revenue by Product"></app-section-title>
 
-<div class="chart-card">
-  <canvas
-    baseChart
-    [data]="revenueByProductChartData"
-    [type]="revenueByProductChartType"
-    [options]="revenueByProductChartOptions">
-  </canvas>
-</div>
+  <div class="chart-card">
+    <canvas
+      baseChart
+      [data]="revenueByProductChartData"
+      [type]="revenueByProductChartType"
+      [options]="revenueByProductChartOptions">
+    </canvas>
+  </div>
 
   <app-section-title title="Customer Analytics"></app-section-title>
 
   <div class="customer-revenue-card">
- 
+
   </div>
 
-  
+
 
   <div class="chart-card">
     <canvas

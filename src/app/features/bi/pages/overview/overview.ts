@@ -45,7 +45,7 @@ interface OverviewKpiCard {
 })
 export class OverviewComponent implements OnInit {
   @ViewChild('dashboardContent', { static: false }) dashboardContent!: ElementRef;
-
+  companyCurrency = 'USD';
   isExportMenuOpen = false;
   loadingKpis = false;
   kpiErrorMessage = '';
@@ -55,9 +55,9 @@ export class OverviewComponent implements OnInit {
   startDate = '';
   endDate = '';
 
-  cashBalanceDisplay = '$0';
+  cashBalanceDisplay = '';
 
-  avgMonthlyNetProfitDisplay = '$0';
+  avgMonthlyNetProfitDisplay = '';
   cashBalanceBars = [
     { label: 'Inflow', value: '$0', width: 0, color: 'green' },
     { label: 'Outflow', value: '$0', width: 0, color: 'red' },
@@ -807,6 +807,7 @@ export class OverviewComponent implements OnInit {
   }
 
   private applyOverviewKpis(data: OverviewKpiResponse): void {
+    this.companyCurrency = data.currency || 'USD';
     this.topKpis = [
       {
         title: 'Total Employees',
@@ -871,15 +872,52 @@ export class OverviewComponent implements OnInit {
     return `${safeValue.toFixed(2)}%`;
   }
 
+  private getCurrencyDisplay(currency: string): string {
+    const value = (currency || '').trim().toUpperCase();
+
+    if (value === 'TND' || value === 'DT') {
+      return 'DT';
+    }
+
+    if (value === 'USD' || value === '$') {
+      return '$';
+    }
+
+    if (value === 'EUR' || value === '€') {
+      return '€';
+    }
+
+    if (value === 'SAR') {
+      return 'SAR';
+    }
+
+    return value || 'USD';
+  }
+
   private formatCompactCurrency(value: number | null | undefined): string {
     const safeValue = value ?? 0;
+    const absValue = Math.abs(safeValue);
 
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      notation: 'compact',
-      maximumFractionDigits: 2,
-    }).format(safeValue);
+    let formattedValue: string;
+
+    if (absValue >= 1_000_000_000) {
+      formattedValue = `${(absValue / 1_000_000_000).toFixed(2)}B`;
+    } else if (absValue >= 1_000_000) {
+      formattedValue = `${(absValue / 1_000_000).toFixed(2)}M`;
+    } else if (absValue >= 1_000) {
+      formattedValue = `${(absValue / 1_000).toFixed(2)}K`;
+    } else {
+      formattedValue = absValue.toFixed(0);
+    }
+
+    const sign = safeValue < 0 ? '-' : '';
+    const currencyDisplay = this.getCurrencyDisplay(this.companyCurrency);
+
+    if (currencyDisplay === '$' || currencyDisplay === '€') {
+      return `${sign}${currencyDisplay}${formattedValue}`;
+    }
+
+    return `${sign}${formattedValue} ${currencyDisplay}`;
   }
 
   private loadDealStatus(): void {
