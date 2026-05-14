@@ -95,7 +95,7 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
   startDate = '';
   endDate = '';
   isExportMenuOpen = false;
-  isLoading = false;
+  isDashboardLoading = false;
   private biFormat = inject(BiFormatService);
   currency = '';
   // ── Sales filters ────────────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
    * Les appels indépendants (retention, highValueDeals) sont lancés en parallèle.
    */
   private reloadAll(): void {
-  this.isLoading = true;
+  this.isDashboardLoading = true;
 
   const filters = this.selectedSalesFilters;
 
@@ -239,7 +239,7 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
   })
     .pipe(
       takeUntil(this.destroy$),
-      finalize(() => (this.isLoading = false)),
+      finalize(() => (this.isDashboardLoading = false)),
     )
     .subscribe({
       next: (results) => {

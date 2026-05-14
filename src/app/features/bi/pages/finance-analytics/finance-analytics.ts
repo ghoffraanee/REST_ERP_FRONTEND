@@ -16,6 +16,8 @@ import {
 } from '../../models/finance-kpi-response';
 import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
 import { BiFormatService } from '../../services/bi-format.service';
+import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
@@ -45,6 +47,8 @@ export class FinanceAnalyticsComponent implements OnInit {
   isExportMenuOpen = false;
   loadingKpis = false;
   kpiErrorMessage = '';
+  isDashboardLoading = false;
+  private dashboardLoadingRequests = 0;
   selectedPeriod: 'last30days' | 'last6months' | 'yearToDate' = 'last6months';
 
   startDate = '';
@@ -332,6 +336,22 @@ export class FinanceAnalyticsComponent implements OnInit {
       },
     ],
   };
+
+  private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
+  this.dashboardLoadingRequests++;
+  this.isDashboardLoading = true;
+
+  return request$.pipe(
+    finalize(() => {
+      this.dashboardLoadingRequests = Math.max(0, this.dashboardLoadingRequests - 1);
+
+      if (this.dashboardLoadingRequests === 0) {
+        this.isDashboardLoading = false;
+      }
+    })
+  );
+}
+
   setPeriod(period: 'last30days' | 'last6months' | 'yearToDate'): void {
     this.selectedPeriod = period;
 
@@ -365,7 +385,8 @@ export class FinanceAnalyticsComponent implements OnInit {
   this.loadingKpis = true;
   this.kpiErrorMessage = '';
 
-  this.financeKpiService.getFinanceKpis(this.startDate, this.endDate).subscribe({
+  this.trackDashboardLoading(
+  this.financeKpiService.getFinanceKpis(this.startDate, this.endDate)).subscribe({
     next: (data) => {
       console.log('Finance KPIs reçus:', data);
       console.log('Période utilisée:', this.startDate, this.endDate);
@@ -664,7 +685,8 @@ export class FinanceAnalyticsComponent implements OnInit {
     }
   }
   private loadRevenueProfitTrend(): void {
-    this.financeKpiService.getRevenueProfitTrend(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(
+  this.financeKpiService.getRevenueProfitTrend(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyRevenueProfitTrend(data);
       },
@@ -698,7 +720,8 @@ export class FinanceAnalyticsComponent implements OnInit {
     };
   }
   private loadCashFlowTrend(): void {
-    this.financeKpiService.getCashFlowTrend(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(
+  this.financeKpiService.getCashFlowTrend(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyCashFlowTrend(data);
       },
@@ -726,7 +749,8 @@ export class FinanceAnalyticsComponent implements OnInit {
     };
   }
   private loadTopOutstandingInvoices(): void {
-    this.financeKpiService.getTopOutstandingInvoices(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(
+  this.financeKpiService.getTopOutstandingInvoices(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyTopOutstandingInvoices(data);
       },
@@ -778,7 +802,7 @@ export class FinanceAnalyticsComponent implements OnInit {
     }
   }
   private loadLiabilityVsAssets(): void {
-    this.financeKpiService.getLiabilityVsAssets(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.financeKpiService.getLiabilityVsAssets(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyLiabilityVsAssets(data);
       },
@@ -832,7 +856,7 @@ export class FinanceAnalyticsComponent implements OnInit {
   }
 
   private loadAssetDistribution(): void {
-    this.financeKpiService.getAssetDistribution(this.endDate).subscribe({
+    this.trackDashboardLoading(this.financeKpiService.getAssetDistribution(this.endDate)).subscribe({
       next: (data) => {
         this.applyAssetDistribution(data);
       },

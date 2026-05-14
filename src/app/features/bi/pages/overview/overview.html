@@ -1,4 +1,16 @@
 <div class="dashboard-page" #dashboardContent>
+  @if (isDashboardLoading) {
+    <div class="dashboard-loading-overlay" data-html2canvas-ignore="true">
+      <div class="dashboard-loader-card">
+        <div class="loader-spinner"></div>
+
+        <div class="loader-text">
+          <h3>Loading dashboard</h3>
+          <p>Preparing your global overview...</p>
+        </div>
+      </div>
+    </div>
+  }
   <div class="top-toolbar">
     <div class="page-header-content">
       <h1>Overview Dashboard</h1>

@@ -13,6 +13,9 @@ import { HrService } from '../../services/hr.service';
 import { HrKpiResponse } from '../../models/hr-kpi-response';
 import { BiFormatService } from '../../services/bi-format.service';
 
+import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+
 Chart.register(...registerables);
 
 @Component({
@@ -34,6 +37,9 @@ export class HrAnalyticsComponent implements OnInit {
   endDate = '';
 
   isExportMenuOpen = false;
+
+  isDashboardLoading = false;
+  private dashboardLoadingRequests = 0;
 
   workforceKpis: Array<{
     title: string;
@@ -313,6 +319,21 @@ export class HrAnalyticsComponent implements OnInit {
     },
   },
 };
+
+private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
+  this.dashboardLoadingRequests++;
+  this.isDashboardLoading = true;
+
+  return request$.pipe(
+    finalize(() => {
+      this.dashboardLoadingRequests = Math.max(0, this.dashboardLoadingRequests - 1);
+
+      if (this.dashboardLoadingRequests === 0) {
+        this.isDashboardLoading = false;
+      }
+    })
+  );
+}
   ngOnInit(): void {
     this.setPeriod('6months');
   }
@@ -364,7 +385,7 @@ export class HrAnalyticsComponent implements OnInit {
   loadHrKpis(): void {
     console.log('CALL API HR 🔥', this.startDate, this.endDate);
 
-    this.hrService.getHrKpis(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.hrService.getHrKpis(this.startDate, this.endDate)).subscribe({
       next: (data: HrKpiResponse) => {
         console.log('DATA HR =', data);
         this.currency = data.currency || '';
@@ -578,7 +599,7 @@ export class HrAnalyticsComponent implements OnInit {
   }
 
   loadHeadcountTrend(): void {
-  this.hrService.getHeadcountTrend(this.startDate, this.endDate).subscribe({
+  this.trackDashboardLoading(this.hrService.getHeadcountTrend(this.startDate, this.endDate)).subscribe({
     next: (data: any[]) => {
       console.log('Headcount trend:', data);
 
@@ -601,7 +622,7 @@ export class HrAnalyticsComponent implements OnInit {
 }
 
   loadAttendanceTrend(): void {
-    this.hrService.getAttendanceTrend(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.hrService.getAttendanceTrend(this.startDate, this.endDate)).subscribe({
       next: (data: any[]) => {
         this.attendanceTrendChartData = {
           labels: data.map((item) => item.label),
@@ -630,7 +651,7 @@ export class HrAnalyticsComponent implements OnInit {
   }
 
   loadTenureDistribution(): void {
-    this.hrService.getTenureDistribution().subscribe({
+    this.trackDashboardLoading(this.hrService.getTenureDistribution()).subscribe({
       next: (data: any[]) => {
         this.tenureChartData = {
           labels: data.map((item) => item.label),
@@ -649,7 +670,7 @@ export class HrAnalyticsComponent implements OnInit {
   }
 
 loadEmployeesByDepartment(): void {
-  this.hrService.getEmployeesByDepartment(this.startDate, this.endDate).subscribe({
+  this.trackDashboardLoading(this.hrService.getEmployeesByDepartment(this.startDate, this.endDate)).subscribe({
     next: (data: any[]) => {
       this.employeesByDepartmentChartHeight = Math.max(500, data.length * 38);
 
@@ -673,7 +694,7 @@ loadEmployeesByDepartment(): void {
   loadSalaryBenchmarking(): void {
     console.log('CALL SALARY BENCHMARKING', this.startDate, this.endDate);
 
-    this.hrService.getSalaryBenchmarking(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.hrService.getSalaryBenchmarking(this.startDate, this.endDate)).subscribe({
       next: (data: any[]) => {
         console.log('SALARY BENCHMARKING DATA =', data);
 
@@ -708,7 +729,7 @@ loadEmployeesByDepartment(): void {
   }
 
   loadHiringFunnel(): void {
-    this.hrService.getHiringFunnel(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.hrService.getHiringFunnel(this.startDate, this.endDate)).subscribe({
       next: (data: any[]) => {
         this.hiringFunnelChartData = {
           labels: data.map((item: any) => item.stage),
@@ -728,7 +749,7 @@ loadEmployeesByDepartment(): void {
   }
 
   loadUpcomingBirthdays(): void {
-    this.hrService.getUpcomingBirthdays().subscribe({
+    this.trackDashboardLoading(this.hrService.getUpcomingBirthdays()).subscribe({
       next: (data: any[]) => {
         this.upcomingBirthdays = data.map((item: any) => ({
           employee: item.employee,

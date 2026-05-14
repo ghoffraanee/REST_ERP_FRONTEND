@@ -25,6 +25,9 @@ import {
 } from '../../models/overview-kpi-response';
 import { RouterLink } from '@angular/router';
 
+import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+
 Chart.register(...registerables);
 type TrendType = 'positive' | 'negative' | 'neutral';
 
@@ -49,6 +52,9 @@ export class OverviewComponent implements OnInit {
   isExportMenuOpen = false;
   loadingKpis = false;
   kpiErrorMessage = '';
+
+  isDashboardLoading = false;
+  private dashboardLoadingRequests = 0;
 
   selectedPeriod: 'last30days' | 'last6months' | 'yearToDate' = 'last6months';
 
@@ -326,7 +332,7 @@ export class OverviewComponent implements OnInit {
   };
 
   private loadFinancialTrend(): void {
-    this.overviewKpiService.getFinancialTrend(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getFinancialTrend(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyFinancialTrend(data);
       },
@@ -377,7 +383,7 @@ export class OverviewComponent implements OnInit {
     return Number(((value ?? 0) / 1_000_000).toFixed(2));
   }
   private loadCashSummary(): void {
-    this.overviewKpiService.getCashSummary(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getCashSummary(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyCashSummary(data);
       },
@@ -408,7 +414,7 @@ export class OverviewComponent implements OnInit {
     ];
   }
   private loadSalesPipelineFunnel(): void {
-    this.overviewKpiService.getSalesPipelineFunnel(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getSalesPipelineFunnel(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applySalesPipelineFunnel(data);
       },
@@ -431,7 +437,7 @@ export class OverviewComponent implements OnInit {
     };
   }
   private loadAttendanceTrend(): void {
-    this.overviewKpiService.getAttendanceTrend(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getAttendanceTrend(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyAttendanceTrend(data);
       },
@@ -476,7 +482,7 @@ export class OverviewComponent implements OnInit {
   }
 
   private loadDepartmentDistribution(): void {
-    this.overviewKpiService.getDepartmentDistribution().subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getDepartmentDistribution()).subscribe({
       next: (data) => {
         this.applyDepartmentDistribution(data);
       },
@@ -494,7 +500,7 @@ export class OverviewComponent implements OnInit {
   }
 
   private loadCustomerRetention(): void {
-    this.overviewKpiService.getCustomerRetention().subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getCustomerRetention()).subscribe({
       next: (data) => {
         this.applyCustomerRetention(data);
       },
@@ -526,7 +532,7 @@ export class OverviewComponent implements OnInit {
   }
 
   private loadTopCustomersByRevenue(): void {
-    this.overviewKpiService.getTopCustomersByRevenue(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getTopCustomersByRevenue(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyTopCustomersByRevenue(data);
       },
@@ -555,7 +561,7 @@ export class OverviewComponent implements OnInit {
   }
 
   private loadOperationalAlerts(): void {
-    this.overviewKpiService.getOperationalAlerts(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getOperationalAlerts(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyOperationalAlerts(data);
       },
@@ -597,7 +603,7 @@ export class OverviewComponent implements OnInit {
     return `${item.value}${suffix}`;
   }
   private loadExecutiveLedger(): void {
-    this.overviewKpiService.getExecutiveLedger(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getExecutiveLedger(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyExecutiveLedger(data);
       },
@@ -750,6 +756,21 @@ export class OverviewComponent implements OnInit {
     return `${Math.round((value / max) * 100)}%`;
   }
 
+  private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
+  this.dashboardLoadingRequests++;
+  this.isDashboardLoading = true;
+
+  return request$.pipe(
+    finalize(() => {
+      this.dashboardLoadingRequests = Math.max(0, this.dashboardLoadingRequests - 1);
+
+      if (this.dashboardLoadingRequests === 0) {
+        this.isDashboardLoading = false;
+      }
+    })
+  );
+}
+
   setPeriod(period: 'last30days' | 'last6months' | 'yearToDate'): void {
     this.selectedPeriod = period;
 
@@ -790,7 +811,7 @@ export class OverviewComponent implements OnInit {
     this.loadingKpis = true;
     this.kpiErrorMessage = '';
 
-    this.overviewKpiService.getOverviewKpis(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getOverviewKpis(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         console.log('Overview KPIs reçus:', data);
         console.log('Période utilisée:', this.startDate, this.endDate);
@@ -921,7 +942,7 @@ export class OverviewComponent implements OnInit {
   }
 
   private loadDealStatus(): void {
-    this.overviewKpiService.getDealStatus(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getDealStatus(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyDealStatus(data);
       },
@@ -949,7 +970,7 @@ export class OverviewComponent implements OnInit {
     }));
   }
   private loadTopSalesPerformers(): void {
-    this.overviewKpiService.getTopSalesPerformers(this.startDate, this.endDate).subscribe({
+    this.trackDashboardLoading(this.overviewKpiService.getTopSalesPerformers(this.startDate, this.endDate)).subscribe({
       next: (data) => {
         this.applyTopSalesPerformers(data);
       },
