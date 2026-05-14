@@ -4,10 +4,12 @@
 }
 
 .main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  min-height: 100vh;
 }
+
+
 
 .page-container {
   padding: 24px;

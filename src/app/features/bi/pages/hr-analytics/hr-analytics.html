@@ -1,15 +1,15 @@
 <div class="dashboard-page" #dashboardContent>
   @if (isDashboardLoading) {
-    <div class="dashboard-loading-overlay" data-html2canvas-ignore="true">
-      <div class="dashboard-loader-card">
-        <div class="loader-spinner"></div>
+  <div class="dashboard-loading-overlay" data-html2canvas-ignore="true">
+    <div class="dashboard-loader-card">
+      <div class="loader-spinner"></div>
 
-        <div class="loader-text">
-          <h3>Loading dashboard</h3>
-          <p>Preparing your HR analytics...</p>
-        </div>
+      <div class="loader-text">
+        <h3>Loading dashboard</h3>
+        <p>Preparing your HR analytics...</p>
       </div>
     </div>
+  </div>
   }
   <div class="page-header">
     <div class="page-title">
@@ -19,25 +19,131 @@
 
     <div class="page-header-right" data-html2canvas-ignore="true">
       <div class="period-group">
-  <button [class.active]="selectedPeriod === '30days'" (click)="setPeriod('30days')">
-  Last 30 Days
-</button>
+        <button [class.active]="selectedPeriod === '30days'" (click)="setPeriod('30days')">
+          Last 30 Days
+        </button>
 
-<button [class.active]="selectedPeriod === '6months'" (click)="setPeriod('6months')">
-  Last 6 Months
-</button>
+        <button [class.active]="selectedPeriod === '6months'" (click)="setPeriod('6months')">
+          Last 6 Months
+        </button>
 
-<button [class.active]="selectedPeriod === 'ytd'" (click)="setPeriod('ytd')">
-  Year to Date
-</button>
-</div>
+        <button [class.active]="selectedPeriod === 'ytd'" (click)="setPeriod('ytd')">
+          Year to Date
+        </button>
+      </div>
 
       <div class="header-divider"></div>
 
-      <button class="header-action-btn">
-        <span class="material-symbols-outlined btn-icon">filter_alt</span>
-        <span>Filters</span>
-      </button>
+      <div class="filter-wrapper">
+        <button class="header-action-btn" [class.active-filter]="hasActiveHrFilters()" (click)="toggleHrFilterPanel()">
+
+          <span class="material-symbols-outlined btn-icon">filter_alt</span>
+          <span>Filters</span>
+
+          @if (hasActiveHrFilters()) {
+          <span class="filter-dot"></span>
+          }
+        </button>
+
+        @if (isHrFilterPanelOpen) {
+        <div class="hr-filter-panel" data-html2canvas-ignore="true">
+          <div class="filter-panel-header">
+            <div>
+              <h3>HR Filters</h3>
+              <p>Refine workforce analytics</p>
+            </div>
+
+            <button class="filter-close-btn" (click)="closeHrFilterPanel()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="filter-grid">
+            <div class="filter-field">
+              <label>Department</label>
+              <select [(ngModel)]="draftHrFilters.departmentName">
+                <option [ngValue]="null">All departments</option>
+                @for (option of departmentOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Employee</label>
+              <select [(ngModel)]="draftHrFilters.employeeName">
+                <option [ngValue]="null">All employees</option>
+                @for (option of employeeOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Gender</label>
+              <select [(ngModel)]="draftHrFilters.gender">
+                <option [ngValue]="null">All genders</option>
+                @for (option of genderOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Position</label>
+              <select [(ngModel)]="draftHrFilters.position">
+                <option [ngValue]="null">All positions</option>
+                @for (option of positionOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Employee Type</label>
+              <select [(ngModel)]="draftHrFilters.employeeType">
+                <option [ngValue]="null">All types</option>
+                @for (option of employeeTypeOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Active Status</label>
+              <select [(ngModel)]="draftHrFilters.active">
+                <option [ngValue]="null">All statuses</option>
+                @for (option of activeOptions; track option.label) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            @if (workstatusOptions.length > 1) {
+            <div class="filter-field">
+              <label>Work Status</label>
+              <select [(ngModel)]="draftHrFilters.workstatusLabel">
+                <option [ngValue]="null">All work statuses</option>
+                @for (option of workstatusOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+            }
+          </div>
+
+          <div class="filter-actions">
+            <button class="filter-reset-btn" (click)="clearHrFilters()">
+              Clear
+            </button>
+
+            <button class="filter-apply-btn" (click)="applyHrFilters()">
+              Apply Filters
+            </button>
+          </div>
+        </div>
+        }
+      </div>
 
       <div class="export-wrapper" data-html2canvas-ignore="true">
         <button class="header-export-btn" (click)="toggleExportMenu()">
@@ -46,31 +152,25 @@
         </button>
 
         @if (isExportMenuOpen) {
-          <div class="export-menu" data-html2canvas-ignore="true">
-            <button (click)="exportAsPDF()">Export as PDF</button>
-            <button (click)="exportAsExcel()">Export as Excel</button>
-            <button (click)="exportAsCSV()">Export as CSV</button>
-          </div>
+        <div class="export-menu" data-html2canvas-ignore="true">
+          <button (click)="exportAsPDF()">Export as PDF</button>
+          <button (click)="exportAsExcel()">Export as Excel</button>
+          <button (click)="exportAsCSV()">Export as CSV</button>
+        </div>
         }
       </div>
     </div>
   </div>
 
   <section class="dashboard-section">
-    <app-section-title
-      title="Workforce Overview"
-      subtitle="">
+    <app-section-title title="Workforce Overview" subtitle="">
     </app-section-title>
 
     <div class="kpi-grid kpi-grid-5">
       @for (item of workforceKpis; track item.title) {
-        <app-kpi-card
-          [title]="item.title"
-          [value]="item.value"
-          [trend]="item.trend"
-          [icon]="item.icon"
-          [trendType]="item.trendType">
-        </app-kpi-card>
+      <app-kpi-card [title]="item.title" [value]="item.value" [trend]="item.trend" [icon]="item.icon"
+        [trendType]="item.trendType">
+      </app-kpi-card>
       }
     </div>
 
@@ -82,12 +182,15 @@
         </div>
 
         <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="headcountChartData"
-            [type]="headcountChartType"
-            [options]="headcountChartOptions">
+          @if (hasHeadcountData) {
+          <canvas baseChart [data]="headcountChartData" [type]="headcountChartType" [options]="headcountChartOptions">
           </canvas>
+          } @else {
+          <div class="no-data">
+            <span class="material-symbols-outlined">show_chart</span>
+            <p>No headcount data available for this period</p>
+          </div>
+          }
         </div>
       </div>
 
@@ -98,12 +201,15 @@
         </div>
 
         <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="tenureChartData"
-            [type]="tenureChartType"
-            [options]="commonChartOptions">
+          @if (hasTenureData) {
+          <canvas baseChart [data]="tenureChartData" [type]="tenureChartType" [options]="commonChartOptions">
           </canvas>
+          } @else {
+          <div class="no-data">
+            <span class="material-symbols-outlined">donut_large</span>
+            <p>No tenure data available for this period</p>
+          </div>
+          }
         </div>
       </div>
     </div>
@@ -111,32 +217,29 @@
 
   <app-section-title title="Employees by Department"></app-section-title>
 
-<div 
-  class="chart-card"
-  [style.height.px]="employeesByDepartmentChartHeight">
-  <canvas
-    baseChart
-    [data]="employeesByDepartmentChartData"
-    [type]="employeesByDepartmentChartType"
-    [options]="employeesByDepartmentChartOptions">
-  </canvas>
-</div>
+  <div class="chart-card" [style.height.px]="hasEmployeesByDepartmentData ? employeesByDepartmentChartHeight : 260">
+
+    @if (hasEmployeesByDepartmentData) {
+    <canvas baseChart [data]="employeesByDepartmentChartData" [type]="employeesByDepartmentChartType"
+      [options]="employeesByDepartmentChartOptions">
+    </canvas>
+    } @else {
+    <div class="no-data">
+      <span class="material-symbols-outlined">groups</span>
+      <p>No department data available for this period</p>
+    </div>
+    }
+  </div>
 
   <section class="dashboard-section">
-    <app-section-title
-      title="Attendance & Presence"
-      subtitle="">
+    <app-section-title title="Attendance & Presence" subtitle="">
     </app-section-title>
 
     <div class="kpi-grid attendance-kpi-grid">
       @for (item of attendanceKpis; track item.title) {
-        <app-kpi-card
-          [title]="item.title"
-          [value]="item.value"
-          [trend]="item.trend"
-          [icon]="item.icon"
-          [trendType]="item.trendType">
-        </app-kpi-card>
+      <app-kpi-card [title]="item.title" [value]="item.value" [trend]="item.trend" [icon]="item.icon"
+        [trendType]="item.trendType">
+      </app-kpi-card>
       }
     </div>
 
@@ -148,12 +251,16 @@
         </div>
 
         <div class="chart-container">
-          <canvas
-            baseChart
-            [data]="attendanceTrendChartData"
-            [type]="attendanceTrendChartType"
+          @if (hasAttendanceTrendData) {
+          <canvas baseChart [data]="attendanceTrendChartData" [type]="attendanceTrendChartType"
             [options]="commonChartOptions">
           </canvas>
+          } @else {
+          <div class="no-data">
+            <span class="material-symbols-outlined">event_busy</span>
+            <p>No attendance data available for this period</p>
+          </div>
+          }
         </div>
       </div>
 
@@ -163,114 +270,106 @@
           <p>Employees have their birthdays soon.</p>
         </div>
 
+        @if (hasUpcomingBirthdaysData) {
         <table>
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Employee</th>
-      <th>Department</th>
-      <th>Remaining days</th>
-    </tr>
-  </thead>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Employee</th>
+              <th>Department</th>
+              <th>Remaining days</th>
+            </tr>
+          </thead>
 
-  <tbody>
-  @for (item of upcomingBirthdays; track item.employee; let i = $index) {
-    <tr>
-      <td>
-        <span class="rank-number birthday-rank">{{ i + 1 }}</span>
-      </td>
-      <td>{{ item.employee }}</td>
-      <td>{{ item.department }}</td>
-      <td>{{ item.remainingDays }}</td>
-    </tr>
-  }
-</tbody>
-</table>
+          <tbody>
+            @for (item of upcomingBirthdays; track item.employee; let i = $index) {
+            <tr>
+              <td>
+                <span class="rank-number birthday-rank">{{ i + 1 }}</span>
+              </td>
+              <td>{{ item.employee }}</td>
+              <td>{{ item.department }}</td>
+              <td>{{ item.remainingDays }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+        } @else {
+        <div class="no-data table-no-data">
+          <span class="material-symbols-outlined">cake</span>
+          <p>No upcoming birthdays found</p>
+        </div>
+        }
       </div>
     </div>
   </section>
 
   <div class="payroll-recruitment-wrapper">
-  <section class="analytics-block payroll-block">
-    <app-section-title 
-      title="Payroll"
-      subtitle="Salary, payroll cost and employee compensation overview.">
-    </app-section-title>
+    <section class="analytics-block payroll-block">
+      <app-section-title title="Payroll" subtitle="Salary, payroll cost and employee compensation overview.">
+      </app-section-title>
 
-    <div class="sub-kpi-grid">
-      @for (item of payrollKpis; track item.title) {
-        <app-kpi-card
-          [title]="item.title"
-          [value]="item.value"
-          [trend]="item.trend"
-          [icon]="item.icon"
+      <div class="sub-kpi-grid">
+        @for (item of payrollKpis; track item.title) {
+        <app-kpi-card [title]="item.title" [value]="item.value" [trend]="item.trend" [icon]="item.icon"
           [trendType]="item.trendType">
         </app-kpi-card>
-      }
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <h3>Salary Benchmarking</h3>
-        <p>Average vs Maximum compensation by department.</p>
+        }
       </div>
 
-      <div class="chart-container">
-        <canvas
-          baseChart
-          [data]="salaryBenchmarkChartData"
-          [type]="salaryBenchmarkChartType"
-          [options]="salaryBenchmarkChartOptions">
-        </canvas>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Salary Benchmarking</h3>
+          <p>Average vs Maximum compensation by department.</p>
+        </div>
+
+        <div class="chart-container">
+          <canvas baseChart [data]="salaryBenchmarkChartData" [type]="salaryBenchmarkChartType"
+            [options]="salaryBenchmarkChartOptions">
+          </canvas>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="analytics-block recruitment-block">
-    <app-section-title
-      title="Recruitment"
-      subtitle="Hiring activity, applications and conversion performance.">
-    </app-section-title>
+    <section class="analytics-block recruitment-block">
+      <app-section-title title="Recruitment" subtitle="Hiring activity, applications and conversion performance.">
+      </app-section-title>
 
-    <div class="sub-kpi-grid">
-      @for (item of recruitmentKpis; track item.title) {
-        <app-kpi-card
-          [title]="item.title"
-          [value]="item.value"
-          [trend]="item.trend"
-          [icon]="item.icon"
+      <div class="sub-kpi-grid">
+        @for (item of recruitmentKpis; track item.title) {
+        <app-kpi-card [title]="item.title" [value]="item.value" [trend]="item.trend" [icon]="item.icon"
           [trendType]="item.trendType">
         </app-kpi-card>
-      }
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <h3>Hiring Funnel</h3>
-        <p>Pipeline efficiency from initial application to final hire.</p>
+        }
       </div>
 
-      <div class="chart-container">
-        <canvas
-          baseChart
-          [data]="hiringFunnelChartData"
-          [type]="hiringFunnelChartType"
-          [options]="hiringFunnelChartOptions">
-        </canvas>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Hiring Funnel</h3>
+          <p>Pipeline efficiency from initial application to final hire.</p>
+        </div>
+
+        <div class="chart-container">
+          @if (hasHiringFunnelData) {
+          <canvas baseChart [data]="hiringFunnelChartData" [type]="hiringFunnelChartType"
+            [options]="hiringFunnelChartOptions">
+          </canvas>
+          } @else {
+          <div class="no-data">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <p>No recruitment data available for this period</p>
+          </div>
+          }
+        </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 
   <div class="footer-kpis">
     @for (item of footerKpis; track item.title) {
-      <app-kpi-card
-        [title]="item.title"
-        [value]="item.value"
-        [trend]="item.trend"
-        [icon]="item.icon"
-        [trendType]="item.trendType">
-      </app-kpi-card>
+    <app-kpi-card [title]="item.title" [value]="item.value" [trend]="item.trend" [icon]="item.icon"
+      [trendType]="item.trendType">
+    </app-kpi-card>
     }
   </div>
 </div>

@@ -98,6 +98,13 @@ export class CrmSalesComponent implements OnInit, OnDestroy {
   isDashboardLoading = false;
   private biFormat = inject(BiFormatService);
   currency = '';
+  hasRevenueTrendData = false;
+  hasPipelineData = false;
+  hasTopSalesData = false;
+  hasHighValueDealsData = false;
+  hasSalesOrdersData = false;
+  hasRevenueByProductData = false;
+  hasRetentionData = false;
   // ── Sales filters ────────────────────────────────────────────────────────────
   isSalesFilterPanelOpen = false;
 
@@ -342,6 +349,10 @@ hasActiveSalesFilters(): boolean {
 
   // ── Appliqueurs de données ─────────────────────────────────────────────────
 
+private hasPositiveValues(values: number[]): boolean {
+  return values.some((value) => Number(value ?? 0) > 0);
+}
+
   private applySalesKpis(data: SalesKpiResponse): void {
     const pos = 'positive' as const;
     const neg = 'negative' as const;
@@ -362,38 +373,60 @@ hasActiveSalesFilters(): boolean {
     ];
   }
 
-  private applyRevenueTrend(data: { label: string; value: number }[]): void {
-    this.revenueChartData = {
-      labels: data.map(i => i.label),
-      datasets: [{ data: data.map(i => i.value), label: 'Revenue' }],
-    };
-  }
+private applyRevenueTrend(data: { label: string; value: number }[]): void {
+  const labels = data.map(i => i.label);
+  const values = data.map(i => Number(i.value ?? 0));
 
- private applyPipelineDistribution(data: { status: string; count: number }[]): void {
-  this.pipelineChartData = {
-    labels: data.map((item) => item.status),
-    datasets: [
-      {
-        data: data.map((item) => Number(item.count ?? 0)),
-        label: 'Pipeline Deals',
-      },
-    ],
+  this.hasRevenueTrendData = this.hasPositiveValues(values);
+
+  this.revenueChartData = {
+    labels,
+    datasets: [{ data: values, label: 'Revenue' }],
   };
 }
 
-  private applyTopSalespersons(data: { name: string; amount: number }[]): void {
-    this.topSales = data.map(i => ({ name: i.name, amount: this.formatCurrency(i.amount) }));
-  }
+private applyPipelineDistribution(data: { status: string; count: number }[]): void {
+  const labels = data.map((item) => item.status);
+  const values = data.map((item) => Number(item.count ?? 0));
 
-  private applyRecentOrders(data: { id: string; customer: string; date: string; amount: number; status: string }[]): void {
-    this.salesOrders = data.map(i => ({
-      id:       i.id,
-      customer: i.customer,
-      date:     i.date,
-      amount:   this.formatCurrency(i.amount),
-      status:   i.status,
-    }));
-  }
+  this.hasPipelineData = values.some((value) => value > 0);
+
+  this.pipelineChartData = {
+    labels,
+    datasets: [
+      {
+        data: values,
+        label: 'Pipeline Deals',
+        backgroundColor: '#f59e0b',
+      },
+    ],
+  };
+
+  console.log('PIPELINE DATA =', data);
+  console.log('PIPELINE VALUES =', values);
+  console.log('HAS PIPELINE DATA =', this.hasPipelineData);
+}
+
+private applyTopSalespersons(data: { name: string; amount: number }[]): void {
+  this.hasTopSalesData = data.length > 0 && data.some(i => Number(i.amount ?? 0) > 0);
+
+  this.topSales = data.map(i => ({
+    name: i.name,
+    amount: this.formatCurrency(i.amount),
+  }));
+}
+
+private applyRecentOrders(data: { id: string; customer: string; date: string; amount: number; status: string }[]): void {
+  this.hasSalesOrdersData = data.length > 0;
+
+  this.salesOrders = data.map(i => ({
+    id: i.id,
+    customer: i.customer,
+    date: i.date,
+    amount: this.formatCurrency(i.amount),
+    status: i.status,
+  }));
+}
 
   getOrderStatusClass(status: string): string {
   const normalizedStatus = (status || '').toLowerCase();
@@ -409,30 +442,31 @@ hasActiveSalesFilters(): boolean {
   return 'status-default';
 }
 
-  private applyRevenueByProduct(data: { name: string; amount: number }[]): void {
+private applyRevenueByProduct(data: { name: string; amount: number }[]): void {
+  const labels = data.map(i => i.name);
+  const values = data.map(i => Number(i.amount ?? 0));
+
+  this.hasRevenueByProductData = this.hasPositiveValues(values);
+
   this.revenueByProductChartData = {
-    labels: data.map(i => i.name),
+    labels,
     datasets: [
       {
-        label: 'Revenue',
-        data: data.map(i => i.amount),
-
-        backgroundColor: 'rgba(91, 97, 246, 0.85)',
-        hoverBackgroundColor: '#5b61f6',
-
-        borderRadius: 12,
-        borderSkipped: false,
-
-        barThickness: 18,
-        maxBarThickness: 22,
+        data: values,
+        backgroundColor: CHART_DEFAULTS.primaryColor,
       },
     ],
   };
 }
 
- private applyCustomerRetention(data: { label: string; value: number }[]): void {
+private applyCustomerRetention(data: { label: string; value: number }[]): void {
+  const labels = data.map(i => i.label);
+  const values = data.map(i => Number(i.value ?? 0));
+
+  this.hasRetentionData = this.hasPositiveValues(values);
+
   this.retentionChartData = {
-    labels: data.map(i => i.label),
+    labels,
     datasets: [{
       data: data.map(i => i.value),
       label: 'Customer Retention Rate',
@@ -454,9 +488,14 @@ hasActiveSalesFilters(): boolean {
   };
 }
 
-  private applyHighValueDeals(data: { name: string; value: number }[]): void {
-    this.highValueDeals = data.map(i => ({ name: i.name, value: this.formatCurrency(i.value) }));
-  }
+private applyHighValueDeals(data: { name: string; value: number }[]): void {
+  this.hasHighValueDealsData = data.length > 0 && data.some(i => Number(i.value ?? 0) > 0);
+
+  this.highValueDeals = data.map(i => ({
+    name: i.name,
+    value: this.formatCurrency(i.value),
+  }));
+}
 
   // ── Utilitaires de date ────────────────────────────────────────────────────
 

@@ -9,18 +9,19 @@ import { PageFilters } from '../../../../layout/page-filters/page-filters';
 import { SectionTitleComponent } from '../../components/section-title/section-title';
 import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
 
-import { HrService } from '../../services/hr.service';
+import { HrService, HrFilters, HrFilterOption } from '../../services/hr.service';
 import { HrKpiResponse } from '../../models/hr-kpi-response';
 import { BiFormatService } from '../../services/bi-format.service';
 
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-hr-analytics',
-  imports: [SectionTitleComponent, KpiCardComponent, BaseChartDirective],
+  imports: [SectionTitleComponent, KpiCardComponent, BaseChartDirective, FormsModule],
   templateUrl: './hr-analytics.html',
   styleUrl: './hr-analytics.css',
   standalone: true,
@@ -32,11 +33,36 @@ export class HrAnalyticsComponent implements OnInit {
   private biFormat = inject(BiFormatService);
   currency = '';
 
+  // ── HR filters ───────────────────────────────────────────────────────────────
+  isHrFilterPanelOpen = false;
+
+  selectedHrFilters: HrFilters = {};
+  draftHrFilters: HrFilters = {};
+
+  departmentOptions: HrFilterOption[] = [];
+  employeeOptions: HrFilterOption[] = [];
+  genderOptions: HrFilterOption[] = [];
+  positionOptions: HrFilterOption[] = [];
+  employeeTypeOptions: HrFilterOption[] = [];
+  workstatusOptions: HrFilterOption[] = [];
+
+  activeOptions: HrFilterOption[] = [
+    { value: true, label: 'Active' },
+    { value: false, label: 'Inactive' },
+  ];
+
   selectedPeriod: '30days' | '6months' | 'ytd' = '6months';
   startDate = '';
   endDate = '';
 
   isExportMenuOpen = false;
+  hasHiringFunnelData = false;
+  hasHeadcountData = false;
+  hasTenureData = false;
+  hasEmployeesByDepartmentData = false;
+  hasAttendanceTrendData = false;
+  hasSalaryBenchmarkData = false;
+  hasUpcomingBirthdaysData = false;
 
   isDashboardLoading = false;
   private dashboardLoadingRequests = 0;
@@ -99,34 +125,34 @@ export class HrAnalyticsComponent implements OnInit {
     ],
   };
   headcountChartOptions: ChartConfiguration<'line'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          return `Headcount: ${context.parsed.y}`;
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `Headcount: ${context.parsed.y}`;
+          },
         },
       },
     },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      ticks: {
-        precision: 0,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
+      },
+      x: {
+        ticks: {
+          autoSkip: false,
+        },
       },
     },
-    x: {
-      ticks: {
-        autoSkip: false,
-      },
-    },
-  },
-};
+  };
 
   tenureChartType: 'doughnut' = 'doughnut';
 
@@ -242,35 +268,35 @@ export class HrAnalyticsComponent implements OnInit {
     ],
   };
 
- hiringFunnelChartOptions: ChartConfiguration<'bar'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          return `${context.parsed.y} applications`;
+  hiringFunnelChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `${context.parsed.y} applications`;
+          },
         },
       },
     },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      ticks: {
-        precision: 0,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
+      },
+      x: {
+        ticks: {
+          autoSkip: false,
+        },
       },
     },
-    x: {
-      ticks: {
-        autoSkip: false,
-      },
-    },
-  },
-};
+  };
 
   employeesByDepartmentChartType: 'bar' = 'bar';
 
@@ -287,63 +313,59 @@ export class HrAnalyticsComponent implements OnInit {
   employeesByDepartmentChartHeight = 500;
 
   employeesByDepartmentChartOptions: ChartConfiguration<'bar'>['options'] = {
-  responsive: true,
-  maintainAspectRatio: false,
-  indexAxis: 'y',
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          return `Employees: ${context.parsed.x}`;
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `Employees: ${context.parsed.x}`;
+          },
         },
       },
     },
-  },
-  scales: {
-    x: {
-      beginAtZero: true,
-      ticks: {
-        precision: 0,
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
       },
-    },
-    y: {
-      ticks: {
-        autoSkip: false,
-        font: {
-          size: 12,
+      y: {
+        ticks: {
+          autoSkip: false,
+          font: {
+            size: 12,
+          },
         },
       },
     },
-  },
-};
+  };
 
-private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
-  this.dashboardLoadingRequests++;
-  this.isDashboardLoading = true;
+  private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
+    this.dashboardLoadingRequests++;
+    this.isDashboardLoading = true;
 
-  return request$.pipe(
-    finalize(() => {
-      this.dashboardLoadingRequests = Math.max(0, this.dashboardLoadingRequests - 1);
+    return request$.pipe(
+      finalize(() => {
+        this.dashboardLoadingRequests = Math.max(0, this.dashboardLoadingRequests - 1);
 
-      if (this.dashboardLoadingRequests === 0) {
-        this.isDashboardLoading = false;
-      }
-    })
-  );
-}
+        if (this.dashboardLoadingRequests === 0) {
+          this.isDashboardLoading = false;
+        }
+      })
+    );
+  }
   ngOnInit(): void {
+    this.loadFilterOptions();
     this.setPeriod('6months');
   }
 
-  setPeriod(period: '30days' | '6months' | 'ytd'): void {
-    this.selectedPeriod = period;
-    this.updateDateRange(period);
-
-    console.log('RH period:', period, this.startDate, this.endDate);
-
+  private reloadAll(): void {
     this.loadHrKpis();
     this.loadHeadcountTrend();
     this.loadAttendanceTrend();
@@ -352,6 +374,36 @@ private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
     this.loadSalaryBenchmarking();
     this.loadHiringFunnel();
     this.loadUpcomingBirthdays();
+  }
+
+  setPeriod(period: '30days' | '6months' | 'ytd'): void {
+    this.selectedPeriod = period;
+    this.updateDateRange(period);
+
+    console.log('RH period:', period, this.startDate, this.endDate);
+
+    this.reloadAll();
+  }
+
+  private loadFilterOptions(): void {
+    forkJoin({
+      departments: this.hrService.getDepartmentOptions(),
+      employees: this.hrService.getEmployeeOptions(),
+      genders: this.hrService.getGenderOptions(),
+      positions: this.hrService.getPositionOptions(),
+      employeeTypes: this.hrService.getEmployeeTypeOptions(),
+      workstatus: this.hrService.getWorkstatusOptions(),
+    }).subscribe({
+      next: (options) => {
+        this.departmentOptions = options.departments;
+        this.employeeOptions = options.employees;
+        this.genderOptions = options.genders;
+        this.positionOptions = options.positions;
+        this.employeeTypeOptions = options.employeeTypes;
+        this.workstatusOptions = options.workstatus;
+      },
+      error: (err) => console.error('Erreur chargement options filtres RH :', err),
+    });
   }
 
   private updateDateRange(period: '30days' | '6months' | 'ytd'): void {
@@ -383,9 +435,10 @@ private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
   }
 
   loadHrKpis(): void {
+    const filters = this.selectedHrFilters;
     console.log('CALL API HR 🔥', this.startDate, this.endDate);
 
-    this.trackDashboardLoading(this.hrService.getHrKpis(this.startDate, this.endDate)).subscribe({
+    this.trackDashboardLoading(this.hrService.getHrKpis(this.startDate, this.endDate, filters)).subscribe({
       next: (data: HrKpiResponse) => {
         console.log('DATA HR =', data);
         this.currency = data.currency || '';
@@ -599,31 +652,41 @@ private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
   }
 
   loadHeadcountTrend(): void {
-  this.trackDashboardLoading(this.hrService.getHeadcountTrend(this.startDate, this.endDate)).subscribe({
-    next: (data: any[]) => {
-      console.log('Headcount trend:', data);
+    const filters = this.selectedHrFilters;
+    this.trackDashboardLoading(this.hrService.getHeadcountTrend(this.startDate, this.endDate, filters)).subscribe({
+      next: (data: any[]) => {
+        console.log('Headcount trend:', data);
 
-      this.headcountChartData = {
-        labels: data.map((item) => item.period),
-        datasets: [
-          {
-            data: data.map((item) => Number(item.headcount ?? 0)),
-            label: 'Headcount',
-            fill: true,
-            tension: 0.4,
-            borderColor: '#5b61f6',
-            backgroundColor: 'rgba(91,97,246,0.2)',
-          },
-        ],
-      };
-    },
-    error: (err) => console.error('Erreur headcount trend', err),
-  });
-}
+        this.hasHeadcountData = data.some((item) => Number(item.headcount ?? 0) > 0);
+
+        this.headcountChartData = {
+          labels: data.map((item) => item.period),
+          datasets: [
+            {
+              data: data.map((item) => Number(item.headcount ?? 0)),
+              label: 'Headcount',
+              fill: true,
+              tension: 0.4,
+              borderColor: '#5b61f6',
+              backgroundColor: 'rgba(91,97,246,0.2)',
+            },
+          ],
+        };
+      },
+      error: (err) => {console.error('Erreur headcount trend', err);
+         this.hasHeadcountData = false;
+      },
+    });
+  }
 
   loadAttendanceTrend(): void {
-    this.trackDashboardLoading(this.hrService.getAttendanceTrend(this.startDate, this.endDate)).subscribe({
+    const filters = this.selectedHrFilters;
+    this.trackDashboardLoading(this.hrService.getAttendanceTrend(this.startDate, this.endDate, filters)).subscribe({
       next: (data: any[]) => {
+        this.hasAttendanceTrendData = data.some(
+          (item) => Number(item.presenceRate ?? 0) > 0 || Number(item.absenceRate ?? 0) > 0
+        );
+
         this.attendanceTrendChartData = {
           labels: data.map((item) => item.label),
           datasets: [
@@ -644,15 +707,20 @@ private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
           ],
         };
       },
+
       error: (err: unknown) => {
         console.error('Erreur attendance trend', err);
+        this.hasAttendanceTrendData = false;
       },
     });
   }
 
   loadTenureDistribution(): void {
-    this.trackDashboardLoading(this.hrService.getTenureDistribution()).subscribe({
+    const filters = this.selectedHrFilters;
+    this.trackDashboardLoading(this.hrService.getTenureDistribution(filters)).subscribe({
       next: (data: any[]) => {
+        this.hasTenureData = data.some((item) => Number(item.value ?? 0) > 0);
+
         this.tenureChartData = {
           labels: data.map((item) => item.label),
           datasets: [
@@ -665,20 +733,29 @@ private trackDashboardLoading<T>(request$: Observable<T>): Observable<T> {
       },
       error: (err: unknown) => {
         console.error('Erreur tenure distribution', err);
+        this.hasTenureData = false;
       },
     });
   }
 
-loadEmployeesByDepartment(): void {
-  this.trackDashboardLoading(this.hrService.getEmployeesByDepartment(this.startDate, this.endDate)).subscribe({
+  loadEmployeesByDepartment(): void {
+  const filters = this.selectedHrFilters;
+
+  this.trackDashboardLoading(
+    this.hrService.getEmployeesByDepartment(this.startDate, this.endDate, filters)
+  ).subscribe({
     next: (data: any[]) => {
+      this.hasEmployeesByDepartmentData = data.some(
+        (item: any) => Number(item.count ?? 0) > 0
+      );
+
       this.employeesByDepartmentChartHeight = Math.max(500, data.length * 38);
 
       this.employeesByDepartmentChartData = {
-        labels: data.map((item) => item.department),
+        labels: data.map((item: any) => item.department),
         datasets: [
           {
-            data: data.map((item) => Number(item.count ?? 0)),
+            data: data.map((item: any) => Number(item.count ?? 0)),
             label: 'Employees',
             backgroundColor: '#5b61f6',
           },
@@ -687,80 +764,169 @@ loadEmployeesByDepartment(): void {
     },
     error: (err: unknown) => {
       console.error('Erreur employees by department', err);
+      this.hasEmployeesByDepartmentData = false;
     },
   });
 }
 
   loadSalaryBenchmarking(): void {
-    console.log('CALL SALARY BENCHMARKING', this.startDate, this.endDate);
+  const filters = this.selectedHrFilters;
+  console.log('CALL SALARY BENCHMARKING', this.startDate, this.endDate);
 
-    this.trackDashboardLoading(this.hrService.getSalaryBenchmarking(this.startDate, this.endDate)).subscribe({
-      next: (data: any[]) => {
-        console.log('SALARY BENCHMARKING DATA =', data);
+  this.trackDashboardLoading(
+    this.hrService.getSalaryBenchmarking(this.startDate, this.endDate, filters)
+  ).subscribe({
+    next: (data: any[]) => {
+      console.log('SALARY BENCHMARKING DATA =', data);
 
-        const labels = data.map((item: any) => item.department);
-        const averageSalaries = data.map((item: any) => Number(item.averageSalary ?? 0));
-        const maximumSalaries = data.map((item: any) => Number(item.maximumSalary ?? 0));
+      const labels = data.map((item: any) => item.department);
+      const averageSalaries = data.map((item: any) => Number(item.averageSalary ?? 0));
+      const maximumSalaries = data.map((item: any) => Number(item.maximumSalary ?? 0));
 
-        console.log('SALARY LABELS =', labels);
-        console.log('AVG SALARIES =', averageSalaries);
-        console.log('MAX SALARIES =', maximumSalaries);
+      this.hasSalaryBenchmarkData =
+        averageSalaries.some((value: number) => value > 0) ||
+        maximumSalaries.some((value: number) => value > 0);
 
-        this.salaryBenchmarkChartData = {
-          labels,
-          datasets: [
-            {
-              data: averageSalaries,
-              label: 'Average Salary',
-              backgroundColor: '#5b61f6',
-            },
-            {
-              data: maximumSalaries,
-              label: 'Maximum Salary',
-              backgroundColor: '#a78bfa',
-            },
-          ],
-        };
-      },
-      error: (err: unknown) => {
-        console.error('Erreur salary benchmarking', err);
-      },
-    });
-  }
+      console.log('SALARY LABELS =', labels);
+      console.log('AVG SALARIES =', averageSalaries);
+      console.log('MAX SALARIES =', maximumSalaries);
+
+      this.salaryBenchmarkChartData = {
+        labels,
+        datasets: [
+          {
+            data: averageSalaries,
+            label: 'Average Salary',
+            backgroundColor: '#5b61f6',
+          },
+          {
+            data: maximumSalaries,
+            label: 'Maximum Salary',
+            backgroundColor: '#a78bfa',
+          },
+        ],
+      };
+    },
+    error: (err: unknown) => {
+      console.error('Erreur salary benchmarking', err);
+      this.hasSalaryBenchmarkData = false;
+    },
+  });
+}
 
   loadHiringFunnel(): void {
-    this.trackDashboardLoading(this.hrService.getHiringFunnel(this.startDate, this.endDate)).subscribe({
-      next: (data: any[]) => {
-        this.hiringFunnelChartData = {
-          labels: data.map((item: any) => item.stage),
-          datasets: [
-            {
-              data: data.map((item: any) => Number(item.count ?? 0)),
-              label: 'Hiring Funnel',
-              backgroundColor: '#f59e0b',
-            },
-          ],
-        };
-      },
-      error: (err: unknown) => {
-        console.error('Erreur hiring funnel', err);
-      },
-    });
-  }
+  const filters = this.selectedHrFilters;
+
+  this.trackDashboardLoading(
+    this.hrService.getHiringFunnel(this.startDate, this.endDate, filters)
+  ).subscribe({
+    next: (data: any[]) => {
+      const labels = data.map((item: any) => item.stage);
+      const values = data.map((item: any) => Number(item.count ?? 0));
+
+      this.hasHiringFunnelData = values.some((value: number) => value > 0);
+
+      this.hiringFunnelChartData = {
+        labels,
+        datasets: [
+          {
+            data: values,
+            label: 'Hiring Funnel',
+            backgroundColor: '#f59e0b',
+          },
+        ],
+      };
+    },
+    error: (err: unknown) => {
+      console.error('Erreur hiring funnel', err);
+      this.hasHiringFunnelData = false;
+    },
+  });
+}
 
   loadUpcomingBirthdays(): void {
-    this.trackDashboardLoading(this.hrService.getUpcomingBirthdays()).subscribe({
-      next: (data: any[]) => {
-        this.upcomingBirthdays = data.map((item: any) => ({
-          employee: item.employee,
-          department: item.department,
-          remainingDays: item.remainingDays,
-        }));
-      },
-      error: (err: unknown) => {
-        console.error('Erreur upcoming birthdays', err);
-      },
-    });
+  const filters = this.selectedHrFilters;
+
+  this.trackDashboardLoading(
+    this.hrService.getUpcomingBirthdays(filters)
+  ).subscribe({
+    next: (data: any[]) => {
+      this.upcomingBirthdays = data.map((item: any) => ({
+        employee: item.employee,
+        department: item.department,
+        remainingDays: item.remainingDays,
+      }));
+
+      this.hasUpcomingBirthdaysData = this.upcomingBirthdays.length > 0;
+    },
+    error: (err: unknown) => {
+      console.error('Erreur upcoming birthdays', err);
+      this.hasUpcomingBirthdaysData = false;
+    },
+  });
+}
+
+  toggleHrFilterPanel(): void {
+    this.isHrFilterPanelOpen = !this.isHrFilterPanelOpen;
+
+    if (this.isHrFilterPanelOpen) {
+      this.draftHrFilters = { ...this.selectedHrFilters };
+    }
+  }
+
+  closeHrFilterPanel(): void {
+    this.isHrFilterPanelOpen = false;
+  }
+
+  applyHrFilters(): void {
+    this.selectedHrFilters = this.cleanHrFilters(this.draftHrFilters);
+    this.isHrFilterPanelOpen = false;
+    this.reloadAll();
+  }
+
+  clearHrFilters(): void {
+    this.draftHrFilters = {};
+    this.selectedHrFilters = {};
+    this.isHrFilterPanelOpen = false;
+    this.reloadAll();
+  }
+
+  private cleanHrFilters(filters: HrFilters): HrFilters {
+    const cleaned: HrFilters = {};
+
+    if (filters.departmentName && filters.departmentName.trim() !== '') {
+      cleaned.departmentName = filters.departmentName;
+    }
+
+    if (filters.employeeName && filters.employeeName.trim() !== '') {
+      cleaned.employeeName = filters.employeeName;
+    }
+
+    if (filters.gender && filters.gender.trim() !== '') {
+      cleaned.gender = filters.gender;
+    }
+
+    if (filters.position && filters.position.trim() !== '') {
+      cleaned.position = filters.position;
+    }
+
+    if (filters.employeeType && filters.employeeType.trim() !== '') {
+      cleaned.employeeType = filters.employeeType;
+    }
+
+    if (filters.active !== null && filters.active !== undefined) {
+      cleaned.active = filters.active;
+    }
+
+    if (filters.workstatusLabel && filters.workstatusLabel.trim() !== '') {
+      cleaned.workstatusLabel = filters.workstatusLabel;
+    }
+
+    return cleaned;
+  }
+
+  hasActiveHrFilters(): boolean {
+    return Object.keys(this.selectedHrFilters).length > 0;
   }
 
   formatNumber(value: number | null | undefined): string {
@@ -872,12 +1038,12 @@ loadEmployeesByDepartment(): void {
         trend: item.trend,
       })),
       ...this.upcomingBirthdays.map((item, index) => ({
-      section: 'Upcoming Birthdays',
-      rank: index + 1,
-      employee: item.employee,
-      department: item.department,
-      remaining_days: item.remainingDays,
-    })),
+        section: 'Upcoming Birthdays',
+        rank: index + 1,
+        employee: item.employee,
+        department: item.department,
+        remaining_days: item.remainingDays,
+      })),
     ];
   }
   formatCurrency(value: number | null | undefined): string {

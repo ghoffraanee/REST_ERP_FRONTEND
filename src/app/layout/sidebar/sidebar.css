@@ -1,8 +1,18 @@
 .sidebar {
-  width: 240px;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 280px;
+  height: 100vh;
+
   background: #ffffff;
   border-right: 1px solid #e5e7eb;
   padding: 20px;
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  z-index: 1000;
 }
 
 .logo {
@@ -10,9 +20,17 @@
   padding: 6px 10px;
 }
 
+
+.logo img {
+  max-width: 150px;
+  height: auto;
+  display: block;
+}
+
 .menu {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .menu li {
@@ -29,8 +47,3 @@
   color: white;
 }
 
-.logo img {
-  max-width: 150px;
-  height: auto;
-  display: block;
-}

@@ -1,15 +1,15 @@
 <div class="dashboard-page" #dashboardContent>
   @if (isDashboardLoading) {
-    <div class="dashboard-loading-overlay" data-html2canvas-ignore="true">
-      <div class="dashboard-loader-card">
-        <div class="loader-spinner"></div>
+  <div class="dashboard-loading-overlay" data-html2canvas-ignore="true">
+    <div class="dashboard-loader-card">
+      <div class="loader-spinner"></div>
 
-        <div class="loader-text">
-          <h3>Loading dashboard</h3>
-          <p>Preparing your BI indicators...</p>
-        </div>
+      <div class="loader-text">
+        <h3>Loading dashboard</h3>
+        <p>Preparing your BI indicators...</p>
       </div>
     </div>
+  </div>
   }
   <div class="page-header">
     <div class="page-title">
@@ -19,21 +19,15 @@
 
     <div class="page-header-right" data-html2canvas-ignore="true">
       <div class="period-group">
-        <button
-          [class.active]="selectedPeriod === '30days'"
-          (click)="setPeriod('30days')">
+        <button [class.active]="selectedPeriod === '30days'" (click)="setPeriod('30days')">
           Last 30 Days
         </button>
 
-        <button
-          [class.active]="selectedPeriod === '6months'"
-          (click)="setPeriod('6months')">
+        <button [class.active]="selectedPeriod === '6months'" (click)="setPeriod('6months')">
           Last 6 Months
         </button>
 
-        <button
-          [class.active]="selectedPeriod === 'ytd'"
-          (click)="setPeriod('ytd')">
+        <button [class.active]="selectedPeriod === 'ytd'" (click)="setPeriod('ytd')">
           Year to Date
         </button>
       </div>
@@ -41,106 +35,104 @@
       <div class="header-divider"></div>
 
       <div class="filter-wrapper">
-  <button
-    class="header-action-btn"
-    [class.active-filter]="hasActiveSalesFilters()"
-    (click)="toggleSalesFilterPanel()">
+        <button class="header-action-btn" [class.active-filter]="hasActiveSalesFilters()"
+          (click)="toggleSalesFilterPanel()">
 
-    <span class="material-symbols-outlined btn-icon">filter_alt</span>
-    <span>Filters</span>
+          <span class="material-symbols-outlined btn-icon">filter_alt</span>
+          <span>Filters</span>
 
-    @if (hasActiveSalesFilters()) {
-      <span class="filter-dot"></span>
-    }
-  </button>
-
-  @if (isSalesFilterPanelOpen) {
-    <div class="sales-filter-panel" data-html2canvas-ignore="true">
-      <div class="filter-panel-header">
-        <div>
-          <h3>Sales Filters</h3>
-          <p>Refine dashboard analytics</p>
-        </div>
-
-        <button class="filter-close-btn" (click)="closeSalesFilterPanel()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <div class="filter-grid">
-        <div class="filter-field">
-          <label>Customer</label>
-          <select [(ngModel)]="draftSalesFilters.customerName">
-            <option [ngValue]="null">All customers</option>
-            @for (option of customerOptions; track option.value) {
-              <option [ngValue]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="filter-field">
-          <label>Product</label>
-          <select [(ngModel)]="draftSalesFilters.productKey">
-            <option [ngValue]="null">All products</option>
-            @for (option of productOptions; track option.value) {
-              <option [ngValue]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="filter-field">
-          <label>Salesperson</label>
-          <select [(ngModel)]="draftSalesFilters.salespersonKey">
-            <option [ngValue]="null">All salespersons</option>
-            @for (option of salespersonOptions; track option.value) {
-              <option [ngValue]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="filter-field">
-          <label>Deal Status</label>
-          <select [(ngModel)]="draftSalesFilters.workstatusLabel">
-            <option [ngValue]="null">All statuses</option>
-            @for (option of workstatusOptions; track option.value) {
-              <option [ngValue]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="filter-field">
-          <label>Customer Category</label>
-          <select [(ngModel)]="draftSalesFilters.customerCategory">
-            <option [ngValue]="null">All categories</option>
-            @for (option of customerCategoryOptions; track option.value) {
-              <option [ngValue]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="filter-field">
-          <label>Product Category</label>
-          <select [(ngModel)]="draftSalesFilters.productCategory">
-            <option [ngValue]="null">All categories</option>
-            @for (option of productCategoryOptions; track option.value) {
-              <option [ngValue]="option.value">{{ option.label }}</option>
-            }
-          </select>
-        </div>
-      </div>
-
-      <div class="filter-actions">
-        <button class="filter-reset-btn" (click)="clearSalesFilters()">
-          Clear
+          @if (hasActiveSalesFilters()) {
+          <span class="filter-dot"></span>
+          }
         </button>
 
-        <button class="filter-apply-btn" (click)="applySalesFilters()">
-          Apply Filters
-        </button>
+        @if (isSalesFilterPanelOpen) {
+        <div class="sales-filter-panel" data-html2canvas-ignore="true">
+          <div class="filter-panel-header">
+            <div>
+              <h3>Sales Filters</h3>
+              <p>Refine dashboard analytics</p>
+            </div>
+
+            <button class="filter-close-btn" (click)="closeSalesFilterPanel()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="filter-grid">
+            <div class="filter-field">
+              <label>Customer</label>
+              <select [(ngModel)]="draftSalesFilters.customerName">
+                <option [ngValue]="null">All customers</option>
+                @for (option of customerOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Product</label>
+              <select [(ngModel)]="draftSalesFilters.productKey">
+                <option [ngValue]="null">All products</option>
+                @for (option of productOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Salesperson</label>
+              <select [(ngModel)]="draftSalesFilters.salespersonKey">
+                <option [ngValue]="null">All salespersons</option>
+                @for (option of salespersonOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Deal Status</label>
+              <select [(ngModel)]="draftSalesFilters.workstatusLabel">
+                <option [ngValue]="null">All statuses</option>
+                @for (option of workstatusOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Customer Category</label>
+              <select [(ngModel)]="draftSalesFilters.customerCategory">
+                <option [ngValue]="null">All categories</option>
+                @for (option of customerCategoryOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filter-field">
+              <label>Product Category</label>
+              <select [(ngModel)]="draftSalesFilters.productCategory">
+                <option [ngValue]="null">All categories</option>
+                @for (option of productCategoryOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="filter-reset-btn" (click)="clearSalesFilters()">
+              Clear
+            </button>
+
+            <button class="filter-apply-btn" (click)="applySalesFilters()">
+              Apply Filters
+            </button>
+          </div>
+        </div>
+        }
       </div>
-    </div>
-  }
-</div>
 
       <div class="export-wrapper">
         <button class="header-export-btn" (click)="toggleExportMenu()">
@@ -149,11 +141,11 @@
         </button>
 
         @if (isExportMenuOpen) {
-          <div class="export-menu" data-html2canvas-ignore="true">
-            <button (click)="exportAsPDF()">Export as PDF</button>
-            <button (click)="exportAsExcel()">Export as Excel</button>
-            <button (click)="exportAsCSV()">Export as CSV</button>
-          </div>
+        <div class="export-menu" data-html2canvas-ignore="true">
+          <button (click)="exportAsPDF()">Export as PDF</button>
+          <button (click)="exportAsExcel()">Export as Excel</button>
+          <button (click)="exportAsCSV()">Export as CSV</button>
+        </div>
         }
       </div>
     </div>
@@ -161,13 +153,9 @@
 
   <div class="kpi-grid">
     @for (item of kpis; track item.title) {
-      <app-kpi-card
-        [title]="item.title"
-        [value]="item.value"
-        [trend]="item.trend"
-        [icon]="item.icon"
-        [trendType]="item.trendType">
-      </app-kpi-card>
+    <app-kpi-card [title]="item.title" [value]="item.value" [trend]="item.trend" [icon]="item.icon"
+      [trendType]="item.trendType">
+    </app-kpi-card>
     }
   </div>
 
@@ -175,25 +163,36 @@
 
   <div class="two-cols">
     <div class="chart-card">
-      <canvas
-        baseChart
-        [data]="revenueChartData"
-        [type]="revenueChartType">
+      @if (hasRevenueTrendData) {
+      <canvas baseChart [data]="revenueChartData" [type]="revenueChartType">
       </canvas>
+      } @else {
+      <div class="no-data">
+        <span class="material-symbols-outlined">bar_chart</span>
+        <p>No revenue data available for this period</p>
+      </div>
+      }
     </div>
 
     <div class="card">
       <h3>Top Sales Representatives</h3>
 
+      @if (hasTopSalesData) {
       @for (item of topSales; track item.name; let i = $index) {
-        <div class="list-row">
-          <div class="ranked-name">
-            <span class="rank-number">{{ i + 1 }}</span>
-            <span>{{ item.name }}</span>
-          </div>
-
-          <strong>{{ item.amount }}</strong>
+      <div class="list-row">
+        <div class="ranked-name">
+          <span class="rank-number">{{ i + 1 }}</span>
+          <span>{{ item.name }}</span>
         </div>
+
+        <strong>{{ item.amount }}</strong>
+      </div>
+      }
+      } @else {
+      <div class="no-data no-data-small">
+        <span class="material-symbols-outlined">person_search</span>
+        <p>No sales representatives data</p>
+      </div>
       }
     </div>
   </div>
@@ -202,37 +201,50 @@
 
   <div class="two-cols">
     <div class="chart-card">
-      <canvas
-        baseChart
-        [data]="pipelineChartData"
-        [type]="pipelineChartType">
+      @if (hasPipelineData) {
+      <canvas baseChart [data]="pipelineChartData" [type]="pipelineChartType">
       </canvas>
+      } @else {
+      <div class="no-data">
+        <span class="material-symbols-outlined">conversion_path</span>
+        <p>No pipeline data available</p>
+      </div>
+      }
     </div>
 
     <div class="card">
-      <h3>High-Value Deals</h3>
-      <div class="list">
-        @for (item of highValueDeals; track item.name) {
-          <div class="list-row">
-            <span>{{ item.name }}</span>
-            <strong>{{ item.value }}</strong>
-          </div>
-        }
-      </div>
+  <h3>High-Value Deals</h3>
+
+  @if (hasHighValueDealsData) {
+    <div class="list">
+      @for (item of highValueDeals; track item.name) {
+        <div class="list-row">
+          <span>{{ item.name }}</span>
+          <strong>{{ item.value }}</strong>
+        </div>
+      }
     </div>
+  } @else {
+    <div class="no-data no-data-small">
+      <span class="material-symbols-outlined">price_check</span>
+      <p>No high-value deals available</p>
+    </div>
+  }
+</div>
   </div>
 
   <app-section-title title="Orders & Invoices"></app-section-title>
 
+  @if (hasSalesOrdersData) {
   <table>
     <thead>
-    <tr>
-      <th>ID</th>
-      <th>Customer</th>
-      <th>Date</th>
-      <th>Amount</th>
-      <th>Status</th>
-    </tr>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
     </thead>
 
     <tbody>
@@ -251,16 +263,29 @@
       }
     </tbody>
   </table>
+} @else {
+  <div class="no-data">
+    <span class="material-symbols-outlined">receipt_long</span>
+    <p>No orders or invoices available for this period</p>
+  </div>
+}
 
   <app-section-title title="Revenue by Product"></app-section-title>
 
   <div class="chart-card">
-    <canvas
-      baseChart
-      [data]="revenueByProductChartData"
-      [type]="revenueByProductChartType"
-      [options]="revenueByProductChartOptions">
-    </canvas>
+    @if (hasRevenueByProductData) {
+  <canvas
+    baseChart
+    [data]="revenueByProductChartData"
+    [type]="revenueByProductChartType"
+    [options]="revenueByProductChartOptions">
+  </canvas>
+} @else {
+  <div class="no-data">
+    <span class="material-symbols-outlined">inventory_2</span>
+    <p>No product revenue data available</p>
+  </div>
+}
   </div>
 
   <app-section-title title="Customer Analytics"></app-section-title>
@@ -272,10 +297,17 @@
 
 
   <div class="chart-card">
-    <canvas
-      baseChart
-      [data]="retentionChartData"
-      [type]="retentionChartType">
-    </canvas>
+    @if (hasRetentionData) {
+  <canvas
+    baseChart
+    [data]="retentionChartData"
+    [type]="retentionChartType">
+  </canvas>
+} @else {
+  <div class="no-data">
+    <span class="material-symbols-outlined">groups</span>
+    <p>No retention data available</p>
+  </div>
+}
   </div>
 </div>
