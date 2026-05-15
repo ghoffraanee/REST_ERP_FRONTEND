@@ -56,8 +56,11 @@ export class OverviewComponent implements OnInit {
   endDate = '';
 
   cashBalanceDisplay = '';
-
   avgMonthlyNetProfitDisplay = '';
+  onTimeRateDisplay = '0%';
+  lateCheckinsDisplay = '0';
+  retentionRateDisplay = '0%';
+
   cashBalanceBars = [
     { label: 'Inflow', value: '$0', width: 0, color: 'green' },
     { label: 'Outflow', value: '$0', width: 0, color: 'red' },
@@ -66,9 +69,7 @@ export class OverviewComponent implements OnInit {
     label: string;
     percentage: string;
   }[] = [];
-  onTimeRateDisplay = '0%';
-  lateCheckinsDisplay = '0';
-  retentionRateDisplay = '0%';
+
   retentionNote = 'Customer retention based on active customers.';
   constructor(private overviewKpiService: OverviewKpiService) {}
 
@@ -76,50 +77,7 @@ export class OverviewComponent implements OnInit {
     this.setPeriod('last6months');
   }
 
-  topKpis: OverviewKpiCard[] = [
-    {
-      title: 'Total Employees',
-      value: '897',
-      trend: '+12',
-      icon: 'groups',
-      trendType: 'positive',
-    },
-    {
-      title: 'Presence Rate',
-      value: '94.2%',
-      trend: '+0.5%',
-      icon: 'check_circle',
-      trendType: 'positive',
-    },
-    {
-      title: 'Total Revenue',
-      value: '$4.28M',
-      trend: '+18.4%',
-      icon: 'attach_money',
-      trendType: 'positive',
-    },
-    {
-      title: 'Net Profit',
-      value: '$1.12M',
-      trend: '+22.1%',
-      icon: 'receipt_long',
-      trendType: 'positive',
-    },
-    {
-      title: 'Win Rate',
-      value: '68%',
-      trend: '+4.4%',
-      icon: 'account_balance',
-      trendType: 'positive',
-    },
-    {
-      title: 'Pipeline Value',
-      value: '$12.4M',
-      trend: '+44%',
-      icon: 'apartment',
-      trendType: 'positive',
-    },
-  ];
+  topKpis: OverviewKpiCard[] = [];
 
   topSalesPerformers: {
     name: string;
@@ -220,15 +178,15 @@ export class OverviewComponent implements OnInit {
 
   financialChartType: 'bar' = 'bar';
   financialChartData: ChartData<'bar'> = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: [],
     datasets: [
       {
-        data: [450, 520, 480, 610, 590, 690],
+        data: [],
         label: 'Revenue',
         backgroundColor: '#7c83ff',
       },
       {
-        data: [150, 190, 180, 230, 225, 270],
+        data: [],
         label: 'Expenses',
         backgroundColor: '#d9dcf2',
       },
@@ -237,10 +195,10 @@ export class OverviewComponent implements OnInit {
 
   financialLineType: 'line' = 'line';
   financialLineData: ChartData<'line'> = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: [],
     datasets: [
       {
-        data: [320, 340, 315, 385, 370, 410],
+        data: [],
         label: 'Net Profit',
         tension: 0.35,
         fill: false,
@@ -251,11 +209,11 @@ export class OverviewComponent implements OnInit {
 
   pipelineFunnelType: 'bar' = 'bar';
   pipelineFunnelData: ChartData<'bar'> = {
-    labels: ['Prospects', 'Qualified', 'Proposal', 'Negotiation', 'Closed'],
+    labels: [],
     datasets: [
       {
-        data: [96, 68, 49, 37, 25],
-        label: 'Deals',
+        data: [],
+        label: 'Pipeline Value',
         backgroundColor: '#f59e0b',
       },
     ],
@@ -263,10 +221,10 @@ export class OverviewComponent implements OnInit {
 
   dealStatusType: 'doughnut' = 'doughnut';
   dealStatusData: ChartData<'doughnut'> = {
-    labels: ['Won', 'Progress', 'Lost'],
+    labels: [],
     datasets: [
       {
-        data: [45, 40, 15],
+        data: [],
         backgroundColor: ['#f59e0b', '#f7c98f', '#f3e1c6'],
         borderWidth: 0,
       },
@@ -275,11 +233,11 @@ export class OverviewComponent implements OnInit {
 
   attendanceTrendType: 'line' = 'line';
   attendanceTrendData: ChartData<'line'> = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    labels: [],
     datasets: [
       {
-        data: [74, 82, 76, 95, 91, 104],
-        label: 'Attendance',
+        data: [],
+        label: 'Presence Rate',
         tension: 0.4,
         fill: false,
         borderColor: '#4f46e5',
@@ -288,11 +246,11 @@ export class OverviewComponent implements OnInit {
   };
 
   attendanceTrendMiniData: ChartData<'line'> = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    labels: [],
     datasets: [
       {
-        data: [28, 34, 31, 39, 37, 44],
-        label: 'Check-ins',
+        data: [],
+        label: 'Late Check-ins',
         tension: 0.4,
         fill: false,
         borderColor: '#b4b1ff',
@@ -302,10 +260,10 @@ export class OverviewComponent implements OnInit {
 
   retentionType: 'doughnut' = 'doughnut';
   retentionData: ChartData<'doughnut'> = {
-    labels: ['Retention', 'Gap'],
+    labels: ['Retention', 'Inactive'],
     datasets: [
       {
-        data: [92, 8],
+        data: [0, 100],
         backgroundColor: ['#e58e2b', '#f8e0c3'],
         hoverBackgroundColor: ['#e58e2b', '#f8e0c3'],
         borderWidth: 0,
@@ -315,10 +273,10 @@ export class OverviewComponent implements OnInit {
 
   customerRevenueType: 'bar' = 'bar';
   customerRevenueData: ChartData<'bar'> = {
-    labels: this.customerRevenue.map((item) => item.name),
+    labels: [],
     datasets: [
       {
-        data: this.customerRevenue.map((item) => item.value),
+        data: [],
         label: 'Revenue',
         backgroundColor: '#f59e0b',
       },

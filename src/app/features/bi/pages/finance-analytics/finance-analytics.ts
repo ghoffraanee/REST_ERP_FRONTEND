@@ -35,7 +35,7 @@ interface FinanceKpiCard {
 @Component({
   selector: 'app-finance-analytics',
   standalone: true,
-  imports: [SectionTitleComponent, BaseChartDirective,KpiCardComponent],
+  imports: [SectionTitleComponent, BaseChartDirective, KpiCardComponent],
   templateUrl: './finance-analytics.html',
   styleUrl: './finance-analytics.css',
 })
@@ -58,149 +58,29 @@ export class FinanceAnalyticsComponent implements OnInit {
   assetDistributionLegend: {
     label: string;
     value: string;
+    color: string;
   }[] = [];
   depreciationExpenseDisplay = '0';
   complianceStatus = 'Full Compliance';
   complianceStatusIcon = '◔';
 
-  nextFilingDates = [
-    {
-      label: 'Quarterly VAT Return',
-      date: 'Nov 15, 2024',
-    },
-    {
-      label: 'Income Tax Provisional',
-      date: 'Oct 31, 2024',
-    },
-  ];
+  nextFilingDates: {
+    label: string;
+    date: string;
+  }[] = [];
   constructor(private financeKpiService: FinanceKpiService) {}
 
   ngOnInit(): void {
     this.setPeriod('last6months');
   }
 
-  overviewKpis: FinanceKpiCard[] = [
-    {
-      title: 'Total Revenue',
-      value: '$4,285,100',
-      trend: '+12.5%',
-      icon: '↗',
-      trendType: 'positive' as const,
-      highlight: true,
-      description: 'Gross income generated before any deductions or expenses.',
-    },
-    {
-      title: 'Net Profit',
-      value: '$1,120,450',
-      trend: '+8.2%',
-      icon: '◔',
-      trendType: 'positive' as const,
-      highlight: true,
-      description: 'Remaining earnings after all operational costs and taxes.',
-    },
-    {
-      title: 'Total Expenses',
-      value: '$3,164,650',
-      trend: '+4.1%',
-      icon: '▣',
-      trendType: 'negative' as const,
-      highlight: false,
-      description: 'Sum of all operational, administrative, and financial costs.',
-    },
-    {
-      title: 'Gross Margin %',
-      value: '26.1%',
-      trend: '+2.4%',
-      icon: '%',
-      trendType: 'positive' as const,
-      highlight: false,
-      description: 'Efficiency metric showing profit as a percentage of revenue.',
-    },
-  ];
+  overviewKpis: FinanceKpiCard[] = [];
 
-  cashKpis: FinanceKpiCard[] = [
-    {
-      title: 'Cash Balance',
-      value: '$842,000',
-      trend: '',
-      icon: '▣',
-      trendType: 'neutral' as const,
-      description: 'Total liquid cash currently held across all internal accounts.',
-    },
-    {
-      title: 'Bank Account Balance',
-      value: '$1,250,500',
-      trend: '',
-      icon: '▥',
-      trendType: 'neutral' as const,
-      description: 'Consolidated balance from primary and secondary banking partners.',
-    },
-    {
-      title: 'Liquidity Ratio',
-      value: '1.85',
-      trend: '+0.1',
-      icon: '⬡',
-      trendType: 'positive' as const,
-      description: 'Ability to meet short-term obligations (Current Assets / Liabilities).',
-    },
-  ];
+  cashKpis: FinanceKpiCard[] = [];
 
-  receivableKpis: FinanceKpiCard[] = [
-    {
-      title: 'Total Accounts Receivable',
-      value: '$650,400',
-      trend: '',
-      icon: '↗',
-      trendType: 'neutral' as const,
-    },
-    {
-      title: 'Total Accounts Payable',
-      value: '$420,100',
-      trend: '',
-      icon: '↘',
-      trendType: 'neutral' as const,
-    },
-    {
-      title: 'Number of Open Invoices',
-      value: '142',
-      trend: '',
-      icon: '▤',
-      trendType: 'neutral' as const,
-    },
-    {
-      title: 'Due Invoices',
-      value: '28',
-      trend: '',
-      icon: '◷',
-      trendType: 'neutral' as const,
-      warning: true,
-    },
-  ];
+  receivableKpis: FinanceKpiCard[] = [];
 
-  taxKpis: FinanceKpiCard[] = [
-    {
-      title: 'VAT Collected',
-      value: '$185,200',
-      trend: '',
-      icon: '▣',
-      trendType: 'neutral' as const,
-    },
-    {
-      title: 'VAT Payable',
-      value: '$64,800',
-      trend: '',
-      icon: '▣',
-      trendType: 'neutral' as const,
-    },
-    {
-      title: 'Depreciation Expense',
-      value: '$210,000',
-      trend: '',
-      icon: '◈',
-      trendType: 'neutral' as const,
-      highlight: true,
-    },
-  ];
+  taxKpis: FinanceKpiCard[] = [];
 
   outstandingInvoices: {
     client: string;
@@ -210,18 +90,11 @@ export class FinanceAnalyticsComponent implements OnInit {
     status: string;
   }[] = [];
 
-  taxPayments = [
-    {
-      code: 'PY',
-      label: 'Payroll Tax Q3',
-      amount: '$42,500',
-    },
-    {
-      code: 'CP',
-      label: 'Corporate Tax Adj.',
-      amount: '$18,200',
-    },
-  ];
+  taxPayments: {
+    code: string;
+    label: string;
+    amount: string;
+  }[] = [];
 
   commonLineOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -266,10 +139,10 @@ export class FinanceAnalyticsComponent implements OnInit {
 
   revenueTrendChartType: 'line' = 'line';
   revenueTrendChartData: ChartData<'line'> = {
-    labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: [],
     datasets: [
       {
-        data: [420, 460, 445, 535, 520],
+        data: [],
         label: 'Revenue',
         tension: 0.35,
         fill: true,
@@ -277,7 +150,7 @@ export class FinanceAnalyticsComponent implements OnInit {
         backgroundColor: 'rgba(91, 97, 246, 0.15)',
       },
       {
-        data: [210, 235, 228, 260, 255],
+        data: [],
         label: 'Profit',
         tension: 0.35,
         fill: false,
@@ -289,15 +162,15 @@ export class FinanceAnalyticsComponent implements OnInit {
 
   cashFlowChartType: 'bar' = 'bar';
   cashFlowChartData: ChartData<'bar'> = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: [],
     datasets: [
       {
-        data: [11500, 14800, 17800, 13200, 22100, 4600, 3500],
+        data: [],
         label: 'Inflow',
         backgroundColor: '#5b61f6',
       },
       {
-        data: [7400, 13200, 8200, 10100, 14500, 1800, 900],
+        data: [],
         label: 'Outflow',
         backgroundColor: '#c9c5f7',
       },
@@ -306,15 +179,15 @@ export class FinanceAnalyticsComponent implements OnInit {
 
   liabilityAssetsChartType: 'bar' = 'bar';
   liabilityAssetsChartData: ChartData<'bar'> = {
-    labels: ['Current', 'Fixed', 'Total'],
+    labels: [],
     datasets: [
       {
-        data: [2.1, 4.3, 5.7],
+        data: [],
         label: 'Total Asset Value',
         backgroundColor: '#f6b04f',
       },
       {
-        data: [1.1, 2.4, 3.2],
+        data: [],
         label: 'Total Liabilities',
         backgroundColor: '#f3c98c',
       },
@@ -323,11 +196,11 @@ export class FinanceAnalyticsComponent implements OnInit {
 
   assetDistributionChartType: 'doughnut' = 'doughnut';
   assetDistributionChartData: ChartData<'doughnut'> = {
-    labels: ['Fixed Assets', 'Current Assets'],
+    labels: [],
     datasets: [
       {
-        data: [4.5, 1.2],
-        backgroundColor: ['#111827', '#cdd5df'],
+        data: [],
+        backgroundColor: ['#111827', '#cdd5df', '#5b61f6', '#f6b04f', '#c9c5f7', '#94a3b8'],
         borderWidth: 0,
       },
     ],
@@ -362,26 +235,26 @@ export class FinanceAnalyticsComponent implements OnInit {
     this.loadAssetDistribution();
   }
   private loadFinanceKpis(): void {
-  this.loadingKpis = true;
-  this.kpiErrorMessage = '';
+    this.loadingKpis = true;
+    this.kpiErrorMessage = '';
 
-  this.financeKpiService.getFinanceKpis(this.startDate, this.endDate).subscribe({
-    next: (data) => {
-      console.log('Finance KPIs reçus:', data);
-      console.log('Période utilisée:', this.startDate, this.endDate);
+    this.financeKpiService.getFinanceKpis(this.startDate, this.endDate).subscribe({
+      next: (data) => {
+        console.log('Finance KPIs reçus:', data);
+        console.log('Période utilisée:', this.startDate, this.endDate);
 
-      this.currency = data.currency || '';
+        this.currency = data.currency || '';
 
-      this.applyFinanceKpis(data);
-      this.loadingKpis = false;
-    },
-    error: (error) => {
-      console.error('Erreur chargement KPIs Finance:', error);
-      this.kpiErrorMessage = 'Impossible de charger les KPIs Finance.';
-      this.loadingKpis = false;
-    },
-  });
-}
+        this.applyFinanceKpis(data);
+        this.loadingKpis = false;
+      },
+      error: (error) => {
+        console.error('Erreur chargement KPIs Finance:', error);
+        this.kpiErrorMessage = 'Impossible de charger les KPIs Finance.';
+        this.loadingKpis = false;
+      },
+    });
+  }
 
   private applyFinanceKpis(data: FinanceKpiResponse): void {
     this.overviewKpis = [
@@ -519,8 +392,8 @@ export class FinanceAnalyticsComponent implements OnInit {
   }
 
   private formatCurrency(value: number | null | undefined): string {
-  return this.biFormat.formatCurrency(value, this.currency);
-}
+    return this.biFormat.formatCurrency(value, this.currency);
+  }
 
   private formatPercent(value: number | null | undefined): string {
     const safeValue = value ?? 0;
@@ -843,20 +716,31 @@ export class FinanceAnalyticsComponent implements OnInit {
   }
 
   private applyAssetDistribution(data: FinanceAssetDistributionItem[]): void {
+    const assetColors = [
+      '#5b61f6',
+      '#5797C2',
+      '#94D1C0',
+      '#efc46f',
+      '#f59e0b',
+      '#c9c5f7',
+      '#9aa8bd',
+    ];
     this.assetDistributionChartData = {
       labels: data.map((item) => item.assetType),
       datasets: [
         {
           data: data.map((item) => this.toMillions(item.assetValue)),
-          backgroundColor: ['#111827', '#cdd5df', '#5b61f6', '#f6b04f', '#c9c5f7', '#94a3b8'],
+          backgroundColor: assetColors,
           borderWidth: 0,
         },
       ],
     };
 
-    this.assetDistributionLegend = data.map((item) => ({
+    this.assetDistributionLegend = data.map((item, index) => ({
       label: item.assetType,
       value: this.formatCompactCurrency(item.assetValue),
+      color: assetColors[index % assetColors.length],
+
     }));
   }
 

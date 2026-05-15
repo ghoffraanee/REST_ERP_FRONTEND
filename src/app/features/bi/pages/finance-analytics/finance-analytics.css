@@ -155,16 +155,24 @@
 
 .overview-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(420px, 1fr);
   gap: 18px;
+  align-items: stretch;
 }
 
 .overview-kpis {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.overview-kpis app-kpi-card {
+  min-height: 145px;
 }
 
+.overview-kpis ::ng-deep .kpi-card {
+  min-height: 145px;
+  padding: 18px;
+}
 .finance-kpi-card,
 .mini-kpi-card,
 .chart-card,
@@ -277,28 +285,37 @@
 }
 
 .chart-small {
-  height: 220px;
+  height: 360px;
 }
-
+#financial-overview {
+  min-height: 435px;
+}
 .chart-medium {
   height: 240px;
 }
 
 .chart-tall {
-  height: 320px;
+  height: 400px;
 }
 
 .cash-grid {
   display: grid;
-  grid-template-columns: 1fr 2.2fr;
+  grid-template-columns: 0.75fr 2.25fr;
   gap: 18px;
+  align-items: stretch;
 }
 
 .cash-side-kpis {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
-
+.cash-side-kpis app-kpi-card {
+  min-height: 125px;
+}
+.cash-side-kpis ::ng-deep .kpi-card {
+  min-height: 125px;
+  padding: 16px;
+}
 .kpi-grid {
   display: grid;
   gap: 16px;
@@ -314,10 +331,22 @@
 
 .two-cols-structure {
   display: grid;
-  grid-template-columns: 1.7fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 18px;
+  align-items: stretch;
+}
+.two-cols-structure > .table-card,
+.two-cols-structure .right-column,
+.two-cols-structure .right-column .chart-card {
+  height: 100%;
 }
 
+.two-cols-structure .chart-card {
+  min-height: 100%;
+}
+.two-cols-structure .chart-medium {
+  height: 260px;
+}
 .right-column {
   display: flex;
   flex-direction: column;
@@ -540,8 +569,11 @@ tbody td {
 
 @media (max-width: 1450px) {
   .overview-grid,
-  .cash-grid,
-  .two-cols-structure,
+  .cash-grid {
+    grid-template-columns: 1fr;
+  }
+
+
   .bottom-grid {
     grid-template-columns: 1fr;
   }

@@ -284,7 +284,7 @@
         <div class="asset-legend">
           @for (item of assetDistributionLegend; track item.label) {
             <div class="legend-row">
-              <span class="dot dot-dark"></span>
+              <span class="dot" [style.background]="item.color"></span>
               <span>{{ item.label }}</span>
               <strong>{{ item.value }}</strong>
             </div>

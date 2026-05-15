@@ -78,7 +78,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-crm-sales',
   standalone: true,
-  imports: [PageFilters, SectionTitleComponent, KpiCardComponent, BaseChartDirective, CommonModule],
+  imports: [SectionTitleComponent, KpiCardComponent, BaseChartDirective, CommonModule],
   templateUrl: './crm-sales.html',
   styleUrl: './crm-sales.css',
 })
