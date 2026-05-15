@@ -43,10 +43,152 @@
 
       <div class="header-divider"></div>
 
-      <button class="header-action-btn">
-        <span class="material-symbols-outlined btn-icon">filter_alt</span>
-        <span>Filters</span>
-      </button>
+      <div class="filter-wrapper" data-html2canvas-ignore="true">
+        <button
+          class="header-action-btn filter-toggle-btn"
+          [class.active]="isFinanceFilterOpen || hasActiveFinanceFilters"
+          (click)="toggleFinanceFilters()">
+          <span class="material-symbols-outlined btn-icon">filter_alt</span>
+          <span>Filters</span>
+
+          @if (hasActiveFinanceFilters) {
+            <span class="filter-dot"></span>
+          }
+        </button>
+
+        @if (isFinanceFilterOpen) {
+          <div class="finance-filter-panel">
+            <div class="filter-panel-header">
+              <div>
+                <h3>Finance Filters</h3>
+                <p>Refine financial analytics by status, account, asset, tax, or amount.</p>
+              </div>
+
+              <button class="filter-close-btn" (click)="toggleFinanceFilters()">
+                ✕
+              </button>
+            </div>
+
+            <div class="filter-grid">
+              <label class="filter-field">
+                <span>Customer</span>
+                <input
+                  type="text"
+                  placeholder="Search customer"
+                  [(ngModel)]="draftFinanceFilters.customerName" />
+              </label>
+              <label class="filter-field">
+                <span>Invoice Status</span>
+                <select [(ngModel)]="draftFinanceFilters.invoiceStatus">
+                  <option [ngValue]="null">All statuses</option>
+                  @for (option of invoiceStatusOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="filter-field">
+                <span>Status Group</span>
+                <select [(ngModel)]="draftFinanceFilters.statusGroup">
+                  <option [ngValue]="null">All groups</option>
+                  @for (option of statusGroupOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+              <label class="filter-field">
+                <span>Customer Category</span>
+                <input
+                  type="text"
+                  placeholder="Customer category"
+                  [(ngModel)]="draftFinanceFilters.customerCategory" />
+              </label>
+
+              <label class="filter-field">
+                <span>Vendor</span>
+                <input
+                  type="text"
+                  placeholder="Search vendor"
+                  [(ngModel)]="draftFinanceFilters.vendorName" />
+              </label>
+
+              <label class="filter-field">
+                <span>Vendor Industry</span>
+                <input
+                  type="text"
+                  placeholder="Vendor industry"
+                  [(ngModel)]="draftFinanceFilters.vendorIndustry" />
+              </label>
+
+
+
+              <label class="filter-field">
+                <span>Account Type</span>
+                <select [(ngModel)]="draftFinanceFilters.accountType">
+                  <option [ngValue]="null">All account types</option>
+                  @for (option of accountTypeOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+              <label class="filter-field">
+                <span>Account Name</span>
+                <input
+                  type="text"
+                  placeholder="Search account"
+                  [(ngModel)]="draftFinanceFilters.accountName" />
+              </label>
+
+              <label class="filter-field">
+                <span>Transaction Type</span>
+                <select [(ngModel)]="draftFinanceFilters.transactionType">
+                  <option [ngValue]="null">All transaction types</option>
+                  @for (option of transactionTypeOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+              <label class="filter-field">
+                <span>Asset Type</span>
+                <select [(ngModel)]="draftFinanceFilters.assetType">
+                  <option [ngValue]="null">All asset types</option>
+                  @for (option of assetTypeOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </label>
+
+
+
+              <label class="filter-field">
+                <span>Min Amount</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  [(ngModel)]="draftFinanceFilters.minAmount" />
+              </label>
+
+              <label class="filter-field">
+                <span>Max Amount</span>
+                <input
+                  type="number"
+                  placeholder="1000000"
+                  [(ngModel)]="draftFinanceFilters.maxAmount" />
+              </label>
+            </div>
+
+            <div class="filter-panel-actions">
+              <button class="filter-reset-btn" (click)="resetFinanceFilters()">
+                Reset
+              </button>
+
+              <button class="filter-apply-btn" (click)="applyFinanceFilters()">
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        }
+      </div>
 
       <div class="export-wrapper">
         <button class="header-export-btn" (click)="toggleExportMenu()">
@@ -86,12 +228,19 @@
         </div>
 
         <div class="chart-container chart-small">
-          <canvas
-            baseChart
-            [data]="revenueTrendChartData"
-            [type]="revenueTrendChartType"
-            [options]="commonLineOptions">
-          </canvas>
+          @if (hasRevenueProfitTrendData) {
+            <canvas
+              baseChart
+              [data]="revenueTrendChartData"
+              [type]="revenueTrendChartType"
+              [options]="commonLineOptions">
+            </canvas>
+          } @else {
+            <div class="no-data">
+              <span class="material-symbols-outlined">bar_chart</span>
+              <p>No revenue and profit data available for this period</p>
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -125,12 +274,19 @@
         </div>
 
         <div class="chart-container chart-tall">
-          <canvas
-            baseChart
-            [data]="cashFlowChartData"
-            [type]="cashFlowChartType"
-            [options]="commonBarOptions">
-          </canvas>
+          @if (hasCashFlowData) {
+            <canvas
+              baseChart
+              [data]="cashFlowChartData"
+              [type]="cashFlowChartType"
+              [options]="commonBarOptions">
+            </canvas>
+          } @else {
+            <div class="no-data">
+              <span class="material-symbols-outlined">waterfall_chart</span>
+              <p>No cash flow data available for this period</p>
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -160,32 +316,40 @@
           <h3>Top Outstanding Invoices</h3>
         </div>
 
-        <table>
-          <thead>
-          <tr>
-            <th>Client / Vendor</th>
-            <th>Reference</th>
-            <th>Amount</th>
-            <th>Due Date</th>
-            <th>Status</th>
-          </tr>
-          </thead>
-          <tbody>
-            @for (item of outstandingInvoices; track item.reference) {
-              <tr>
-                <td>{{ item.client }}</td>
-                <td>{{ item.reference }}</td>
-                <td>{{ item.amount }}</td>
-                <td>{{ item.dueDate }}</td>
-                <td>
-                  <span class="status-pill" [class]="getStatusClass(item.status)">
-                    {{ item.status }}
-                  </span>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        @if (hasOutstandingInvoicesData) {
+          <table>
+            <thead>
+            <tr>
+              <th>Client / Vendor</th>
+              <th>Reference</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+            </thead>
+
+            <tbody>
+              @for (item of outstandingInvoices; track item.reference) {
+                <tr>
+                  <td>{{ item.client }}</td>
+                  <td>{{ item.reference }}</td>
+                  <td>{{ item.amount }}</td>
+                  <td>{{ item.dueDate }}</td>
+                  <td>
+            <span class="status-pill" [class]="getStatusClass(item.status)">
+              {{ item.status }}
+            </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="no-data table-no-data">
+            <span class="material-symbols-outlined">receipt_long</span>
+            <p>No outstanding invoices found for this period</p>
+          </div>
+        }
       </div>
 
       <div class="right-column">
@@ -195,12 +359,19 @@
           </div>
 
           <div class="chart-container chart-medium">
-            <canvas
-              baseChart
-              [data]="liabilityAssetsChartData"
-              [type]="liabilityAssetsChartType"
-              [options]="commonBarOptions">
-            </canvas>
+            @if (hasLiabilityAssetsData) {
+              <canvas
+                baseChart
+                [data]="liabilityAssetsChartData"
+                [type]="liabilityAssetsChartType"
+                [options]="commonBarOptions">
+              </canvas>
+            } @else {
+              <div class="no-data">
+                <span class="material-symbols-outlined">balance</span>
+                <p>No liability and asset data available for this period</p>
+              </div>
+            }
           </div>
 
           <div class="summary-pairs">
@@ -288,23 +459,32 @@
         </div>
 
         <div class="chart-container chart-medium">
-          <canvas
-            baseChart
-            [data]="assetDistributionChartData"
-            [type]="assetDistributionChartType"
-            [options]="commonLineOptions">
-          </canvas>
-        </div>
-
-        <div class="asset-legend">
-          @for (item of assetDistributionLegend; track item.label) {
-            <div class="legend-row">
-              <span class="dot" [style.background]="item.color"></span>
-              <span>{{ item.label }}</span>
-              <strong>{{ item.value }}</strong>
+          @if (hasAssetDistributionData) {
+            <canvas
+              baseChart
+              [data]="assetDistributionChartData"
+              [type]="assetDistributionChartType"
+              [options]="commonLineOptions">
+            </canvas>
+          } @else {
+            <div class="no-data">
+              <span class="material-symbols-outlined">donut_large</span>
+              <p>No asset distribution data available for this period</p>
             </div>
           }
         </div>
+
+        @if (hasAssetDistributionData) {
+          <div class="asset-legend">
+            @for (item of assetDistributionLegend; track item.label) {
+              <div class="legend-row">
+                <span class="dot" [style.background]="item.color"></span>
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+            }
+          </div>
+        }
 
         <div class="depreciation-box">
           <span>↗ Depreciation Expense</span>

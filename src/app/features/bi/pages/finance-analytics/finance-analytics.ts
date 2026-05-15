@@ -19,7 +19,7 @@ import { KpiCardComponent } from '../../components/kpi-card/kpi-card';
 import { BiFormatService } from '../../services/bi-format.service';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-
+import { FormsModule } from '@angular/forms';
 Chart.register(...registerables);
 
 type TrendType = 'positive' | 'negative' | 'neutral';
@@ -38,12 +38,17 @@ interface FinanceKpiCard {
 @Component({
   selector: 'app-finance-analytics',
   standalone: true,
-  imports: [SectionTitleComponent, BaseChartDirective, KpiCardComponent],
+  imports: [SectionTitleComponent, BaseChartDirective, KpiCardComponent, FormsModule],
   templateUrl: './finance-analytics.html',
   styleUrl: './finance-analytics.css',
 })
 export class FinanceAnalyticsComponent implements OnInit {
   @ViewChild('dashboardContent', { static: false }) dashboardContent!: ElementRef;
+  hasRevenueProfitTrendData = false;
+  hasCashFlowData = false;
+  hasOutstandingInvoicesData = false;
+  hasLiabilityAssetsData = false;
+  hasAssetDistributionData = false;
 
   isExportMenuOpen = false;
   loadingKpis = false;
@@ -80,7 +85,158 @@ export class FinanceAnalyticsComponent implements OnInit {
   ngOnInit(): void {
     this.setPeriod('last6months');
   }
+  // ── Finance filters ─────────────────────────────────────────────────────────
+  isFinanceFilterOpen = false;
 
+  appliedFinanceFilters = {
+    customerName: null as string | null,
+    customerCategory: null as string | null,
+
+    vendorName: null as string | null,
+    vendorIndustry: null as string | null,
+
+    invoiceStatus: null as string | null,
+    statusGroup: null as string | null,
+
+    accountName: null as string | null,
+    accountType: null as string | null,
+    transactionType: null as string | null,
+
+    assetType: null as string | null,
+
+    minAmount: null as number | null,
+    maxAmount: null as number | null,
+  };
+
+  draftFinanceFilters = { ...this.appliedFinanceFilters };
+
+  invoiceStatusOptions = [
+    { label: 'Overdue', value: 'Overdue' },
+    { label: 'Due Soon', value: 'Due Soon' },
+    { label: 'Waiting', value: 'WAITING' },
+    { label: 'Paid', value: 'PAID' },
+    { label: 'Pending', value: 'PENDING' },
+  ];
+  statusGroupOptions = [
+    { label: 'Paid', value: 'PAID' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Validated', value: 'VALIDATED' },
+  ];
+
+  transactionTypeOptions = [
+    { label: 'Debit', value: 'debit' },
+    { label: 'Credit', value: 'credit' },
+    { label: 'Income', value: 'income' },
+    { label: 'Expense', value: 'expense' },
+  ];
+  accountTypeOptions = [
+    { label: 'Cash and Cash Equivalents', value: 'cash and cash equivalents' },
+    { label: 'Bank Balance', value: 'bank balance' },
+    { label: 'Current Liability', value: 'current liability' },
+    { label: 'Liability', value: 'liability' },
+  ];
+
+  taxTypeOptions = [
+    { label: 'VAT Collected', value: 'VAT Collected' },
+    { label: 'VAT Payable', value: 'VAT Payable' },
+    { label: 'Estimated Tax', value: 'Estimated Tax' },
+  ];
+
+  assetTypeOptions = [
+    { label: 'IT Equipment', value: 'IT Equipment' },
+    { label: 'Mobile Devices', value: 'Mobile Devices' },
+    { label: 'Furniture', value: 'Furniture' },
+    { label: 'Vehicles', value: 'Vehicles' },
+    { label: 'Security Systems', value: 'Security Systems' },
+    { label: 'Infrastructure', value: 'Infrastructure' },
+    { label: 'Office Equipment', value: 'Office Equipment' },
+  ];
+
+  toggleFinanceFilters(): void {
+    this.isFinanceFilterOpen = !this.isFinanceFilterOpen;
+    this.draftFinanceFilters = { ...this.appliedFinanceFilters };
+  }
+
+  applyFinanceFilters(): void {
+    this.appliedFinanceFilters = this.cleanFinanceFilters(this.draftFinanceFilters);
+    this.isFinanceFilterOpen = false;
+
+    this.reloadAll();
+  }
+
+  resetFinanceFilters(): void {
+    this.draftFinanceFilters = {
+      customerName: null,
+      customerCategory: null,
+
+      vendorName: null,
+      vendorIndustry: null,
+
+      invoiceStatus: null,
+      statusGroup: null,
+
+      accountName: null,
+      accountType: null,
+      transactionType: null,
+
+      assetType: null,
+
+      minAmount: null,
+      maxAmount: null,
+    };
+
+    this.appliedFinanceFilters = { ...this.draftFinanceFilters };
+    this.isFinanceFilterOpen = false;
+
+    this.reloadAll();
+  }
+  private reloadAll(): void {
+    this.loadFinanceKpis();
+    this.loadRevenueProfitTrend();
+    this.loadCashFlowTrend();
+    this.loadTopOutstandingInvoices();
+    this.loadLiabilityVsAssets();
+    this.loadAssetDistribution();
+    this.loadComplianceSummary();
+  }
+
+  private cleanFinanceFilters(
+    filters: typeof this.appliedFinanceFilters,
+  ): typeof this.appliedFinanceFilters {
+    return {
+      customerName: filters.customerName?.trim() || null,
+      customerCategory: filters.customerCategory?.trim() || null,
+
+      vendorName: filters.vendorName?.trim() || null,
+      vendorIndustry: filters.vendorIndustry?.trim() || null,
+
+      invoiceStatus: filters.invoiceStatus?.trim() || null,
+      statusGroup: filters.statusGroup?.trim() || null,
+
+      accountName: filters.accountName?.trim() || null,
+      accountType: filters.accountType?.trim() || null,
+      transactionType: filters.transactionType?.trim() || null,
+
+      assetType: filters.assetType?.trim() || null,
+
+      minAmount:
+        filters.minAmount !== null && filters.minAmount !== undefined
+          ? Number(filters.minAmount)
+          : null,
+
+      maxAmount:
+        filters.maxAmount !== null && filters.maxAmount !== undefined
+          ? Number(filters.maxAmount)
+          : null,
+    };
+  }
+
+  get hasActiveFinanceFilters(): boolean {
+    return Object.values(this.appliedFinanceFilters).some(
+      (value) => value !== null && value !== '',
+    );
+  }
+  //end filter
   overviewKpis: FinanceKpiCard[] = [];
   cashKpis: FinanceKpiCard[] = [];
   receivableKpis: FinanceKpiCard[] = [];
@@ -220,13 +376,7 @@ export class FinanceAnalyticsComponent implements OnInit {
     this.startDate = this.formatDate(start);
     this.endDate = this.formatDate(today);
 
-    this.loadFinanceKpis();
-    this.loadRevenueProfitTrend();
-    this.loadCashFlowTrend();
-    this.loadTopOutstandingInvoices();
-    this.loadLiabilityVsAssets();
-    this.loadAssetDistribution();
-    this.loadComplianceSummary();
+    this.reloadAll();
   }
 
   // ── Data loading ───────────────────────────────────────────────────────────
@@ -236,7 +386,11 @@ export class FinanceAnalyticsComponent implements OnInit {
     this.kpiErrorMessage = '';
 
     this.trackDashboardLoading(
-      this.financeKpiService.getFinanceKpis(this.startDate, this.endDate),
+      this.financeKpiService.getFinanceKpis(
+        this.startDate,
+        this.endDate,
+        this.appliedFinanceFilters,
+      ),
     ).subscribe({
       next: (data) => {
         this.currency = data.currency || '';
@@ -340,19 +494,26 @@ export class FinanceAnalyticsComponent implements OnInit {
         description: 'Total tax amount due for the selected period.',
       },
     ];
-
   }
 
   private loadRevenueProfitTrend(): void {
     this.trackDashboardLoading(
-      this.financeKpiService.getRevenueProfitTrend(this.startDate, this.endDate),
+      this.financeKpiService.getRevenueProfitTrend(
+        this.startDate,
+        this.endDate,
+        this.appliedFinanceFilters,
+      ),
     ).subscribe({
       next: (data: FinanceRevenueProfitTrendItem[]) => {
+        this.hasRevenueProfitTrendData = data.some(
+          (item) => Number(item.revenue ?? 0) > 0 || Number(item.profit ?? 0) !== 0,
+        );
+
         this.revenueTrendChartData = {
           labels: data.map((item) => item.period),
           datasets: [
             {
-              data: data.map((item) => item.revenue),
+              data: data.map((item) => Number(item.revenue ?? 0)),
               label: 'Revenue',
               tension: 0.35,
               fill: true,
@@ -360,7 +521,7 @@ export class FinanceAnalyticsComponent implements OnInit {
               backgroundColor: 'rgba(91, 97, 246, 0.15)',
             },
             {
-              data: data.map((item) => item.profit),
+              data: data.map((item) => Number(item.profit ?? 0)),
               label: 'Profit',
               tension: 0.35,
               fill: false,
@@ -372,24 +533,33 @@ export class FinanceAnalyticsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur chargement Revenue Profit Trend:', error);
+        this.hasRevenueProfitTrendData = false;
       },
     });
   }
   private loadCashFlowTrend(): void {
     this.trackDashboardLoading(
-      this.financeKpiService.getCashFlowTrend(this.startDate, this.endDate),
+      this.financeKpiService.getCashFlowTrend(
+        this.startDate,
+        this.endDate,
+        this.appliedFinanceFilters,
+      ),
     ).subscribe({
       next: (data: FinanceCashFlowTrendItem[]) => {
+        this.hasCashFlowData = data.some(
+          (item) => Number(item.inflow ?? 0) > 0 || Number(item.outflow ?? 0) > 0,
+        );
+
         this.cashFlowChartData = {
           labels: data.map((item) => item.period),
           datasets: [
             {
-              data: data.map((item) => item.inflow),
+              data: data.map((item) => Number(item.inflow ?? 0)),
               label: 'Inflow',
               backgroundColor: '#5b61f6',
             },
             {
-              data: data.map((item) => item.outflow),
+              data: data.map((item) => Number(item.outflow ?? 0)),
               label: 'Outflow',
               backgroundColor: '#c9c5f7',
             },
@@ -398,12 +568,17 @@ export class FinanceAnalyticsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur chargement Cash Flow Trend:', error);
+        this.hasCashFlowData = false;
       },
     });
   }
   private loadTopOutstandingInvoices(): void {
     this.trackDashboardLoading(
-      this.financeKpiService.getTopOutstandingInvoices(this.startDate, this.endDate),
+      this.financeKpiService.getTopOutstandingInvoices(
+        this.startDate,
+        this.endDate,
+        this.appliedFinanceFilters,
+      ),
     ).subscribe({
       next: (data: FinanceOutstandingInvoiceItem[]) => {
         this.outstandingInvoices = data.map((item) => ({
@@ -413,30 +588,43 @@ export class FinanceAnalyticsComponent implements OnInit {
           dueDate: item.dueDate,
           status: item.status,
         }));
+
+        this.hasOutstandingInvoicesData = this.outstandingInvoices.length > 0;
       },
       error: (error) => {
         console.error('Erreur chargement Outstanding Invoices:', error);
+        this.outstandingInvoices = [];
+        this.hasOutstandingInvoicesData = false;
       },
     });
   }
   private loadLiabilityVsAssets(): void {
     this.trackDashboardLoading(
-      this.financeKpiService.getLiabilityVsAssets(this.startDate, this.endDate),
+      this.financeKpiService.getLiabilityVsAssets(
+        this.startDate,
+        this.endDate,
+        this.appliedFinanceFilters,
+      ),
     ).subscribe({
       next: (data: FinanceLiabilityAssetItem) => {
-        this.totalLiabilitiesDisplay = this.formatCurrency(data.totalLiabilities);
-        this.assetValueDisplay = this.formatCurrency(data.totalAssets);
+        const totalAssets = Number(data.totalAssets ?? 0);
+        const totalLiabilities = Number(data.totalLiabilities ?? 0);
+
+        this.hasLiabilityAssetsData = totalAssets > 0 || totalLiabilities > 0;
+
+        this.totalLiabilitiesDisplay = this.formatCurrency(totalLiabilities);
+        this.assetValueDisplay = this.formatCurrency(totalAssets);
 
         this.liabilityAssetsChartData = {
           labels: ['Assets', 'Liabilities'],
           datasets: [
             {
-              data: [data.totalAssets],
+              data: [totalAssets],
               label: 'Total Asset Value',
               backgroundColor: '#f6b04f',
             },
             {
-              data: [data.totalLiabilities],
+              data: [totalLiabilities],
               label: 'Total Liabilities',
               backgroundColor: '#f3c98c',
             },
@@ -445,44 +633,56 @@ export class FinanceAnalyticsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur chargement Liability vs Assets:', error);
+
+        this.hasLiabilityAssetsData = false;
+        this.totalLiabilitiesDisplay = this.formatCurrency(0);
+        this.assetValueDisplay = this.formatCurrency(0);
       },
     });
   }
   private loadAssetDistribution(): void {
-    this.trackDashboardLoading(this.financeKpiService.getAssetDistribution(this.endDate)).subscribe(
-      {
-        next: (data: FinanceAssetDistributionItem[]) => {
-          const colors: string[] = [
-            '#5b61f6',
-            '#7c83ff',
-            '#f6b04f',
-            '#f59e0b',
-            '#c9c5f7',
-            '#94a3b8',
-          ];
+    this.trackDashboardLoading(
+      this.financeKpiService.getAssetDistribution(this.endDate, this.appliedFinanceFilters),
+    ).subscribe({
+      next: (data: FinanceAssetDistributionItem[]) => {
+        const colors: string[] = [
+          '#F0C097',
+          '#7479f8',
+          '#C4BFC9',
+          '#E0842B',
+          '#56c7f5',
+          '#f7c66b',
+          '#8b8ffb',
+        ];
 
-          this.assetDistributionChartData = {
-            labels: data.map((item) => item.assetType),
-            datasets: [
-              {
-                data: data.map((item) => item.assetValue),
-                backgroundColor: colors,
-                borderWidth: 0,
-              },
-            ],
-          };
+        const values = data.map((item) => Number(item.assetValue ?? 0));
 
-          this.assetDistributionLegend = data.map((item, index) => ({
-            label: item.assetType,
-            value: this.formatCurrency(item.assetValue),
-            color: colors[index % colors.length],
-          }));
-        },
-        error: (error) => {
-          console.error('Erreur chargement Asset Distribution:', error);
-        },
+        this.hasAssetDistributionData = values.some((value) => value > 0);
+
+        this.assetDistributionChartData = {
+          labels: data.map((item) => item.assetType),
+          datasets: [
+            {
+              data: values,
+              backgroundColor: colors,
+              borderWidth: 0,
+            },
+          ],
+        };
+
+        this.assetDistributionLegend = data.map((item, index) => ({
+          label: item.assetType,
+          value: this.formatCurrency(item.assetValue),
+          color: colors[index % colors.length],
+        }));
       },
-    );
+      error: (error) => {
+        console.error('Erreur chargement Asset Distribution:', error);
+
+        this.hasAssetDistributionData = false;
+        this.assetDistributionLegend = [];
+      },
+    });
   }
 
   // ── Dashboard loading tracker ──────────────────────────────────────────────
@@ -667,7 +867,11 @@ export class FinanceAnalyticsComponent implements OnInit {
   }
   private loadComplianceSummary(): void {
     this.trackDashboardLoading(
-      this.financeKpiService.getComplianceSummary(this.startDate, this.endDate),
+      this.financeKpiService.getComplianceSummary(
+        this.startDate,
+        this.endDate,
+        this.appliedFinanceFilters,
+      ),
     ).subscribe({
       next: (data: FinanceComplianceSummaryResponse) => {
         this.complianceStatus = data.complianceStatus;
@@ -689,5 +893,4 @@ export class FinanceAnalyticsComponent implements OnInit {
       },
     });
   }
-
 }
